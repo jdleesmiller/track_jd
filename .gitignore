@@ -1,0 +1,6 @@
+.*.swp
+.rvmrc
+.bundle
+.DS_Store
+.metadata
+TrackJD/bin
