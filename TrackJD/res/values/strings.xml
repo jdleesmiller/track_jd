@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="hello">Hello World, TrackJDActivity!</string>
+    <string name="server_name">Server Name:</string>
     <string name="app_name">TrackJD</string>
     <string name="stop">Stop</string>
+    <string name="dim_screen">dim screen</string>
 
 </resources>

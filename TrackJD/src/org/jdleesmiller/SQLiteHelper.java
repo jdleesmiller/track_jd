@@ -10,9 +10,20 @@ import android.database.sqlite.SQLiteOpenHelper;
 public class SQLiteHelper extends SQLiteOpenHelper {
   
   private static final String DATABASE_NAME = "track_jd.db";
-  private static final int DATABASE_VERSION = 2;
+  
+  /**
+   * Increment this number when the schema changes. NB this drops any data
+   * in the old database.
+   */
+  private static final int DATABASE_VERSION = 3;
   
   public static final String GPS_TABLE = "gps";
+  
+  public static final String ACCELEROMETER_TABLE = "accel";
+  
+  public static final String ORIENTATION_TABLE = "orient";
+  
+  public static final String BLUETOOTH_TABLE = "bluetooth";
   
   public SQLiteHelper(Context context) {
     super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -27,12 +38,35 @@ public class SQLiteHelper extends SQLiteOpenHelper {
       "latitude DOUBLE," +
       "longitude DOUBLE," +
       "time INTEGER)");
+    
+    db.execSQL("CREATE TABLE " + ACCELEROMETER_TABLE + " (" +
+      "accel_id INTEGER PRIMARY KEY AUTOINCREMENT," +
+      "x FLOAT," +
+      "y FLOAT," +
+      "z FLOAT," +
+      "time INTEGER)");
+    
+    db.execSQL("CREATE TABLE " + ORIENTATION_TABLE + " (" +
+      "orient_id INTEGER PRIMARY KEY AUTOINCREMENT," +
+      "azimuth FLOAT," +
+      "pitch FLOAT," +
+      "roll FLOAT," +
+      "time INTEGER)");
+    
+    db.execSQL("CREATE TABLE " + BLUETOOTH_TABLE + " (" +
+      "bluetooth_id INTEGER PRIMARY KEY AUTOINCREMENT," +
+      "bdaddr CHAR(17)," +
+      "rssi INTEGER," +
+      "time INTEGER)");
   }
 
   @Override
   public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
     // WARNING: upgrading destroys old data
     db.execSQL("DROP TABLE IF EXISTS " + GPS_TABLE);
+    db.execSQL("DROP TABLE IF EXISTS " + ACCELEROMETER_TABLE);
+    db.execSQL("DROP TABLE IF EXISTS " + ORIENTATION_TABLE);
+    db.execSQL("DROP TABLE IF EXISTS " + BLUETOOTH_TABLE);
     onCreate(db);
   }
 }

@@ -1,89 +1,108 @@
 package org.jdleesmiller;
 
 import android.app.Activity;
-import android.content.Context;
-import android.location.Location;
-import android.location.LocationListener;
-import android.location.LocationManager;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
-import android.widget.Toast;
+import android.view.WindowManager;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
+import android.widget.EditText;
 
 public class TrackJDActivity extends Activity {
   private DataLayer dataLayer;
+  private DataCollector dataCollector;
   private DataUploader dataUploader;
-  private LocationListener locationListener;
-  private LocationManager locationManager;
+  
+  /**
+   * On a scale of 0 to 1. The intention is to save some battery life.
+   */
+  private static final float DIMMED_SCREEN_BRIGHTNESS = 0.1f;
+  
+  /**
+   * Assume we're on a LAN.
+   */
+  private static final String DEFAULT_SERVER_NAME = "192.168.x.x:3666";
 
   @Override
   public void onCreate(Bundle savedInstanceState) {
+    Log.d("TrackJDActivity", "ONCREATE");
+
     super.onCreate(savedInstanceState);
+
+    //
+    // interface
+    //
     setContentView(R.layout.main);
 
+    final SharedPreferences prefs = getSharedPreferences(
+      Constants.PREFS_FILE_NAME, MODE_PRIVATE);
+
+    final EditText serverName = (EditText) findViewById(R.id.server_name);
+    serverName.setOnKeyListener(new View.OnKeyListener() {
+      public boolean onKey(View v, int keyCode, KeyEvent event) {
+        // set the server name when the user presses enter
+        if ((event.getAction() == KeyEvent.ACTION_DOWN)
+          && (keyCode == KeyEvent.KEYCODE_ENTER)) {
+          SharedPreferences.Editor prefsEditor = prefs.edit();
+          prefsEditor.putString(Constants.PREF_SERVER_NAME, serverName
+            .getText().toString());
+          prefsEditor.commit();
+          return true;
+        }
+        return false;
+      }
+    });
+    serverName.setText(prefs.getString(Constants.PREF_SERVER_NAME,
+      DEFAULT_SERVER_NAME));
+
+    final CheckBox dimScreen = (CheckBox) findViewById(R.id.dim_screen);
+    dimScreen
+      .setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+        public void onCheckedChanged(CompoundButton buttonView,
+          boolean isChecked) {
+          WindowManager.LayoutParams layoutParams = getWindow().getAttributes();
+          if (isChecked) {
+            layoutParams.screenBrightness = DIMMED_SCREEN_BRIGHTNESS;
+          } else {
+            layoutParams.screenBrightness = 1.0f;
+          }
+          getWindow().setAttributes(layoutParams);
+          SharedPreferences.Editor prefsEditor = prefs.edit();
+          prefsEditor.putBoolean(Constants.PREF_DIM_SCREEN, isChecked);
+          prefsEditor.commit();
+        }
+      });
+    dimScreen.setChecked(prefs.getBoolean(Constants.PREF_DIM_SCREEN, false));
+
+    //
+    // tracking
+    //
     dataLayer = new DataLayer(this);
-    
+
+    dataCollector = new DataCollector(this, dataLayer);
+
     dataUploader = new DataUploader(this, dataLayer);
 
-    locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-
-    locationListener = new LocationListener() {
-      public void onStatusChanged(String provider, int status, Bundle extras) {
-        Toast.makeText(getApplicationContext(),
-          "status changed: " + String.valueOf(status), Toast.LENGTH_SHORT)
-          .show();
-      }
-
-      public void onProviderEnabled(String provider) {
-        Toast.makeText(getApplicationContext(), "GPS enabled",
-          Toast.LENGTH_SHORT).show();
-      }
-
-      public void onProviderDisabled(String provider) {
-        Toast.makeText(getApplicationContext(), "GPS disabled",
-          Toast.LENGTH_SHORT).show();
-      }
-
-      public void onLocationChanged(Location location) {
-        dataLayer.logGPS(location);
-      }
-    };
-  }
-
-  @Override
-  protected void onStart() {
-    super.onStart();
-    Log.d("TEST", "ONSTART");
-
     dataLayer.open();
+    dataCollector.start();
     dataUploader.start();
-
-    // set both minTime and minDistance to zero for maximum update rate
-    long minTime = 0;
-    float minDistance = 0;
-    locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
-      minTime, minDistance, locationListener);
   }
 
   @Override
-  protected void onStop() {
-    Log.d("TEST", "ONSTOP");
-    
-    locationManager.removeUpdates(locationListener);
+  protected void onDestroy() {
+    Log.d("TrackJDActivity", "ONDESTROY");
+
+    dataCollector.stop();
     dataUploader.stop();
     dataLayer.close();
-    super.onStop();
+
+    super.onDestroy();
   }
 
   public void clickStop(View view) {
     this.finish();
   }
 }
-
-// note: can get NMEA data directly (but still have to register the
-// location listener as above)
-// locationManager.addNmeaListener(new NmeaListener() {
-// public void onNmeaReceived(long timestamp, String nmea) {
-// Log.d("NMEA", nmea);
-// }
-// });

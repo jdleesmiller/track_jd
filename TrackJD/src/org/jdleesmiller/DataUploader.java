@@ -24,6 +24,7 @@ import org.apache.http.params.HttpProtocolParams;
 
 import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.net.wifi.WifiManager;
 import android.os.AsyncTask;
 import android.os.Handler;
@@ -36,7 +37,7 @@ public class DataUploader implements Runnable {
    * because Internet connectivity will often be intermittent, and we have to
    * retry reasonably quickly.
    */
-  private static final int CONNECTION_TIMEOUT_MILLIS = 2000;
+  private static final int CONNECTION_TIMEOUT_MILLIS = 3000;
 
   /**
    * Once a connection is made, wait this long for the upload to finish. The
@@ -53,18 +54,23 @@ public class DataUploader implements Runnable {
   /**
    * Max number of records to upload at once.
    */
-  private static final int MAX_RECORDS_TO_UPLOAD = 10;
+  private static final int MAX_RECORDS_TO_UPLOAD = 100;
 
   private final Context context;
+
+  private final SharedPreferences prefs;
 
   private final Handler uploadHandler;
 
   private final DataLayer dataLayer;
 
-  /**
-   * Largest gps_id of the last successfully uploaded chunk of GPS data.
-   */
-  private long lastGPSId;
+  private long lastGPSRecordId;
+
+  private long lastAccelerometerRecordId;
+
+  private long lastOrientationRecordId;
+
+  private long lastBluetoothRecordId;
 
   /**
    * Asynchronously post the logged data to the server.
@@ -88,7 +94,6 @@ public class DataUploader implements Runnable {
      */
     @Override
     protected Boolean doInBackground(Object... args) {
-      Log.i("DataUploader", "doInBackground");
       try {
         HttpParams httpParams = new BasicHttpParams();
         HttpProtocolParams.setVersion(httpParams, HttpVersion.HTTP_1_1);
@@ -126,40 +131,75 @@ public class DataUploader implements Runnable {
 
   public DataUploader(Context context, DataLayer dataLayer) {
     this.context = context;
+    this.prefs = context.getSharedPreferences(Constants.PREFS_FILE_NAME,
+      Context.MODE_PRIVATE);
     this.uploadHandler = new Handler();
-
     this.dataLayer = dataLayer;
-    this.lastGPSId = -1;
   }
 
   public void start() {
-    this.lastGPSId = dataLayer.getMaxGPSId();
-    Log.i("DataUploader", "starting; lastGPSId=" + this.lastGPSId);
     uploadHandler.postDelayed(this, UPLOAD_INTERVAL_MILLIS);
+
+    // reset the last uploaded record ids (don't upload stale data on restart)
+    lastGPSRecordId = dataLayer.getMaxGPSId();
+    lastAccelerometerRecordId = dataLayer.getMaxAccelerometerRecordId();
+    lastOrientationRecordId = dataLayer.getMaxOrientationRecordId();
+    lastBluetoothRecordId = dataLayer.getMaxBluetoothRecordId();
   }
 
   public void stop() {
-    Log.i("DataUploader", "STOPPING");
     uploadHandler.removeCallbacks(this);
   }
 
+  /**
+   * @return fully qualified URI to post data to
+   */
+  public String getLogPath() {
+    String serverName = prefs.getString(Constants.PREF_SERVER_NAME, "");
+    return "http://" + serverName + "/log";
+  }
+
   public void run() {
-    String url = "http://192.168.1.59:3666/log";
     List<NameValuePair> postData = new ArrayList<NameValuePair>();
 
     // fill in the post data
-    getDeviceIdentifiers(postData);
-    final long newLastGPSId = getGPSPostData(postData);
+    StringBuilder buf = new StringBuilder();
+    final long newLastGPSRecordId = dataLayer.getGPSAsCSV(buf, lastGPSRecordId,
+      MAX_RECORDS_TO_UPLOAD);
+    if (newLastGPSRecordId != lastGPSRecordId)
+      postData.add(new BasicNameValuePair("gps", buf.toString()));
+
+    buf.setLength(0);
+    final long newLastAccelerometerRecordId = dataLayer.getAccelerometerAsCSV(
+      buf, lastAccelerometerRecordId, MAX_RECORDS_TO_UPLOAD);
+    if (newLastAccelerometerRecordId != lastAccelerometerRecordId)
+      postData.add(new BasicNameValuePair("accel", buf.toString()));
+
+    buf.setLength(0);
+    final long newLastOrientationRecordId = dataLayer.getOrientationAsCSV(buf,
+      lastOrientationRecordId, MAX_RECORDS_TO_UPLOAD);
+    if (newLastOrientationRecordId != lastOrientationRecordId)
+      postData.add(new BasicNameValuePair("orient", buf.toString()));
+
+    buf.setLength(0);
+    final long newLastBluetoothRecordId = dataLayer.getBluetoothAsCSV(buf,
+      lastBluetoothRecordId, MAX_RECORDS_TO_UPLOAD);
+    if (newLastBluetoothRecordId != lastBluetoothRecordId)
+      postData.add(new BasicNameValuePair("bt", buf.toString()));
 
     // post if there's anything new to report
-    if (newLastGPSId != lastGPSId) {
-      UploadTask uploadTask = new UploadTask(url, postData) {
+    if (postData.size() > 0) {
+      getDeviceIdentifiers(postData);
+      
+      UploadTask uploadTask = new UploadTask(getLogPath(), postData) {
         @Override
         protected void onPostExecute(Boolean result) {
-          Log.i("DataUploader", "onPostExecute");
           // if we successfully uploaded the data, don't resend it
           if (result) {
-            lastGPSId = newLastGPSId;
+            lastGPSRecordId = newLastGPSRecordId;
+            lastAccelerometerRecordId = newLastAccelerometerRecordId;
+            lastOrientationRecordId = newLastOrientationRecordId;
+            lastBluetoothRecordId = newLastBluetoothRecordId;
           }
           // always keep posting
           uploadHandler.postDelayed(DataUploader.this, UPLOAD_INTERVAL_MILLIS);
@@ -201,23 +241,5 @@ public class DataUploader implements Runnable {
     } catch (RuntimeException e) {
       Log.w("DataUploader", "failed to get WiFi MAC address");
     }
-  }
-
-  /**
-   * Get GPS records logged since the last post (if any).
-   * 
-   * @param postData
-   * 
-   * @return id of the latest record added to the buffer
-   */
-  public long getGPSPostData(List<NameValuePair> postData) {
-    StringBuffer buf = new StringBuffer();
-
-    long newLastGPSId = dataLayer.getGPSAsCSV(buf, lastGPSId,
-      MAX_RECORDS_TO_UPLOAD);
-
-    postData.add(new BasicNameValuePair("gps", buf.toString()));
-
-    return newLastGPSId;
   }
 }

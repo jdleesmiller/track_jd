@@ -24,3 +24,27 @@ CREATE TABLE gps_records (
   latitude DOUBLE PRECISION,
   longitude DOUBLE PRECISION,
   time BIGINT);
+
+CREATE TABLE accelerometer_records (
+  accelerometer_record_id SERIAL PRIMARY KEY,
+  device_id INTEGER REFERENCES devices(device_id),
+  x REAL,
+  y REAL,
+  z REAL,
+  time BIGINT);
+
+CREATE TABLE orientation_records (
+  orientation_record_id SERIAL PRIMARY KEY,
+  device_id INTEGER REFERENCES devices(device_id),
+  azimuth REAL,
+  pitch REAL,
+  roll REAL,
+  time BIGINT);
+
+CREATE TABLE bluetooth_records (
+  bluetooth_record_id SERIAL PRIMARY KEY,
+  device_id INTEGER REFERENCES devices(device_id),
+  bdaddr CHAR(17),
+  RSSI INT8,
+  time BIGINT);
+

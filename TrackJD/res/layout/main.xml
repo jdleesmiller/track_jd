@@ -1,13 +1,36 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- NB: keepScreenOn prevents the phone from going to sleep -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
+    android:keepScreenOn="true"
     android:orientation="vertical" >
 
     <TextView
+        android:id="@+id/server_name_label"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:text="@string/hello" />
+        android:text="@string/server_name" />
+
+    <EditText
+        android:id="@+id/server_name"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:inputType="textUri" />
+
+    <Space
+        android:layout_width="match_parent"
+        android:layout_height="36dp" />
+
+    <CheckBox
+        android:id="@+id/dim_screen"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/dim_screen" />
+
+    <Space
+        android:layout_width="match_parent"
+        android:layout_height="36dp" />
 
     <Button
         android:id="@+id/stop"
