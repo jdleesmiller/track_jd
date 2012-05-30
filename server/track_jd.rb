@@ -105,7 +105,6 @@ track_jd = Rack::Builder.new do
 
       store_accelerometer_records(device_id, req.params['accel']) if
         req.params['accel']
-      p req.params['accel']
 
       store_orientation_records(device_id, req.params['orient']) if
         req.params['orient']

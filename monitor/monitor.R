@@ -72,11 +72,13 @@ monitor.jd <- function(lastTimeLong = -1, max.records=500) {
         main=lastTimeString))
       with(gps.records, points(longitude, latitude))
 
-      with(accelerometer.records, plot(x, y, type='p',
-        main=lastTimeStringAccel))
+      with(accelerometer.records, plot(time, x, type='l',
+        main=lastTimeStringAccel, ylim=c(-10,10)))
+      with(accelerometer.records, lines(time, y, col='green'))
+      with(accelerometer.records, lines(time, z, col='red'))
 
       with(orientation.records, plot(time, azimuth, type='l',
-        main=lastTimeStringAccel, ylim=c(-2*pi,2*pi)))
+        main=lastTimeStringAccel, ylim=c(-pi,pi)))
       with(orientation.records, lines(time, pitch, col='green'))
       with(orientation.records, lines(time, roll, col='red'))
 
