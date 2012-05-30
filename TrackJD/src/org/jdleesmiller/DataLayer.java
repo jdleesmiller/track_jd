@@ -7,9 +7,14 @@ import android.database.DatabaseUtils;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.location.Location;
+import android.util.Log;
 
 /**
  * Runs queries against database.
+ * 
+ * Note: it is not necessary to close the database, because we want to keep
+ * logging as long as the process is alive, and the OS will close the database
+ * when the process dies.
  */
 public class DataLayer {
   private SQLiteHelper dbHelper;
@@ -20,11 +25,8 @@ public class DataLayer {
   }
 
   public void open() throws SQLException {
+    Log.d("DataLayer", "open");
     db = dbHelper.getWritableDatabase();
-  }
-
-  public void close() {
-    dbHelper.close();
   }
 
   /**

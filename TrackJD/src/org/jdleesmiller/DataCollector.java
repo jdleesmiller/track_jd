@@ -90,13 +90,13 @@ public class DataCollector {
         try {
           SensorManager.getRotationMatrixFromVector(rotationMatrix, event.values);
           SensorManager.getOrientation(rotationMatrix, orientation);
+          dataLayer.logOrientation(orientation[0], orientation[1],
+            orientation[2], eventTimestampToUTC(event.timestamp));
         } catch(RuntimeException e) {
           Log.e("DataCollector", "failed to get orientation");
           e.printStackTrace();
           return;
         }
-        dataLayer.logOrientation(orientation[0], orientation[1],
-          orientation[2], eventTimestampToUTC(event.timestamp));
       }
 
       public void onAccuracyChanged(Sensor sensor, int accuracy) {

@@ -15,6 +15,7 @@ import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.conn.HttpHostConnectException;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.params.BasicHttpParams;
@@ -113,11 +114,12 @@ public class DataUploader implements Runnable {
         e.printStackTrace();
       } catch (ClientProtocolException e) {
         Log.w("DataUploader", "failed with ClientProtocolException");
-        e.printStackTrace();
       } catch (SocketTimeoutException e) {
         Log.w("DataUploader", "failed with SocketTimeoutException");
       } catch (NoHttpResponseException e) {
         Log.w("DataUploader", "failed with NoHttpResponseException");
+      } catch (HttpHostConnectException e) {
+        Log.w("DataUploader", "failed with HttpHostConnectException");
       } catch (IOException e) {
         Log.w("DataUploader", "failed with IOException");
         e.printStackTrace();

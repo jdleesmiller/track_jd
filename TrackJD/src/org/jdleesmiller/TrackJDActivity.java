@@ -3,7 +3,6 @@ package org.jdleesmiller;
 import android.app.Activity;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.WindowManager;
@@ -11,11 +10,11 @@ import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 
+/**
+ * Known bug: changing orientation after starting the app causes problems --
+ * we really need to register the listeners in a service, not in an activity.
+ */
 public class TrackJDActivity extends Activity {
-  private DataLayer dataLayer;
-  private DataCollector dataCollector;
-  private DataUploader dataUploader;
-  
   /**
    * On a scale of 0 to 1. The intention is to save some battery life.
    */
@@ -28,13 +27,8 @@ public class TrackJDActivity extends Activity {
 
   @Override
   public void onCreate(Bundle savedInstanceState) {
-    Log.d("TrackJDActivity", "ONCREATE");
-
     super.onCreate(savedInstanceState);
-
-    //
-    // interface
-    //
+    
     setContentView(R.layout.main);
 
     final SharedPreferences prefs = getSharedPreferences(
@@ -76,33 +70,14 @@ public class TrackJDActivity extends Activity {
         }
       });
     dimScreen.setChecked(prefs.getBoolean(Constants.PREF_DIM_SCREEN, false));
-
-    //
-    // tracking
-    //
-    dataLayer = new DataLayer(this);
-
-    dataCollector = new DataCollector(this, dataLayer);
-
-    dataUploader = new DataUploader(this, dataLayer);
-
-    dataLayer.open();
-    dataCollector.start();
-    dataUploader.start();
-  }
-
-  @Override
-  protected void onDestroy() {
-    Log.d("TrackJDActivity", "ONDESTROY");
-
-    dataCollector.stop();
-    dataUploader.stop();
-    dataLayer.close();
-
-    super.onDestroy();
+    
+    // creating the singleton starts the background process -- we should
+    // probably use a service instead of this hack
+    TrackJDApplication.startIfNotRunning(this);
   }
 
   public void clickStop(View view) {
+    TrackJDApplication.stopIfRunning();
     this.finish();
   }
 }
