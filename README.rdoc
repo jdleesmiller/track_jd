@@ -1,0 +1,76 @@
+= TrackJD
+
+A simple Android app and supporting infrastructure for reading sensor data from
+a phone and sending it (e.g. over WiFi) to a database on a server. Also includes
+a simple visualisation component written in R.
+
+This was built for a one-day vehicle tracking experiment, it was my first
+Android app, and it was written mainly on trains. It is still pretty rough.
+
+== Architecture
+
+TrackJD:
+  - an Android app
+  - records sensor data locally in an SQLite database
+  - periodically posts new data to the server over HTTP
+
+server: 
+  - a very simple web server in ruby
+  - accepts data from the clients and stores them in PostgreSQL a database
+
+monitor:
+  - an R script that extracts the latest data from the PostgreSQL database and
+    plots them
+
+== Requirements
+
+TrackJD:
+  - An Android 4 phone with GPS, accelerometer, rotation vector and Bluetooth
+    sensors. This was tested on an HTC Sensation Z710e running Android 4.0.3.
+  - Eclipse with the appropriate Android development plug-in
+
+server:
+  - Ruby 1.9.3, PostgreSQL 8.4
+  - use bundler to get the required gems
+
+monitor:
+  - R 2.15.0
+  - RODBC with appropriate datasources; see comments in monitor.R
+
+== Known Bugs
+
+The Android app crashes sometimes; I think this is due to application life cycle
+issues. It should be restructured to use a Service so that it does not rely on
+always being open.
+
+The monitoring script needs cleanup, and it doesn't handle multiple devices
+reporting at once.
+
+The devices do not allow you to set many significant parameters. They should
+really be configurable from the server.
+
+== LICENSE
+
+(The MIT license.)
+
+Copyright (c) 2012 John Lees-Miller
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+'Software'), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject to
+the following conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ 

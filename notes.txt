@@ -1,8 +1,0 @@
-Test 20120528:
-  - Airport Flyer from Temple Meads ~ 1330 to Airport
-  - phone oriented face up with HTC logo forward; sitting on left side at approx
-    longitudinal center of bus
-  - 1335: stopped at bus stop in Bedminster
-  - return journey also logged but not sent over WiFi
-  - battery drain approx 25% after 90 minutes of logging -- probably we need
-    in-car power 
