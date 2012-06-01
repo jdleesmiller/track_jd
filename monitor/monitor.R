@@ -26,7 +26,7 @@ monitor.jd <- function(lastTimeLong = -1, max.records=500) {
     accelerometer.records.new <- sqlQuery(cn, paste(
       'SELECT * FROM accelerometer_records WHERE time > ', lastTimeLongAccel))
     orientation.records.new <- sqlQuery(cn, paste(
-      'SELECT * FROM orientation_records WHERE time > ', lastTimeLongAccel))
+      'SELECT * FROM orientation_records WHERE time > ', lastTimeLongOrient))
     odbcClose(cn)
     print(paste(nrow(gps.records.new), '/', nrow(accelerometer.records.new),
           '/', nrow(orientation.records.new),
@@ -78,7 +78,7 @@ monitor.jd <- function(lastTimeLong = -1, max.records=500) {
       with(accelerometer.records, lines(time, z, col='red'))
 
       with(orientation.records, plot(time, azimuth, type='l',
-        main=lastTimeStringAccel, ylim=c(-pi,pi)))
+        main=lastTimeStringOrient, ylim=c(-pi,pi)))
       with(orientation.records, lines(time, pitch, col='green'))
       with(orientation.records, lines(time, roll, col='red'))
 
