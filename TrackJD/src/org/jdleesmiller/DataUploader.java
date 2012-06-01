@@ -1,7 +1,9 @@
 package org.jdleesmiller;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.List;
@@ -15,7 +17,6 @@ import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpPost;
-import org.apache.http.conn.HttpHostConnectException;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.params.BasicHttpParams;
@@ -116,10 +117,10 @@ public class DataUploader implements Runnable {
         Log.w("DataUploader", "failed with ClientProtocolException");
       } catch (SocketTimeoutException e) {
         Log.w("DataUploader", "failed with SocketTimeoutException");
+      } catch (SocketException e) {
+        Log.w("DataUploader", "failed with SocketException");
       } catch (NoHttpResponseException e) {
         Log.w("DataUploader", "failed with NoHttpResponseException");
-      } catch (HttpHostConnectException e) {
-        Log.w("DataUploader", "failed with HttpHostConnectException");
       } catch (IOException e) {
         Log.w("DataUploader", "failed with IOException");
         e.printStackTrace();
@@ -165,25 +166,25 @@ public class DataUploader implements Runnable {
     List<NameValuePair> postData = new ArrayList<NameValuePair>();
 
     // fill in the post data
-    StringBuilder buf = new StringBuilder();
+    ByteArrayOutputStream buf = new ByteArrayOutputStream();
     final long newLastGPSRecordId = dataLayer.getGPSAsCSV(buf, lastGPSRecordId,
       MAX_RECORDS_TO_UPLOAD);
     if (newLastGPSRecordId != lastGPSRecordId)
       postData.add(new BasicNameValuePair("gps", buf.toString()));
-
-    buf.setLength(0);
+    
+    buf.reset();
     final long newLastAccelerometerRecordId = dataLayer.getAccelerometerAsCSV(
       buf, lastAccelerometerRecordId, MAX_RECORDS_TO_UPLOAD);
     if (newLastAccelerometerRecordId != lastAccelerometerRecordId)
       postData.add(new BasicNameValuePair("accel", buf.toString()));
 
-    buf.setLength(0);
+    buf.reset();
     final long newLastOrientationRecordId = dataLayer.getOrientationAsCSV(buf,
       lastOrientationRecordId, MAX_RECORDS_TO_UPLOAD);
     if (newLastOrientationRecordId != lastOrientationRecordId)
       postData.add(new BasicNameValuePair("orient", buf.toString()));
 
-    buf.setLength(0);
+    buf.reset();
     final long newLastBluetoothRecordId = dataLayer.getBluetoothAsCSV(buf,
       lastBluetoothRecordId, MAX_RECORDS_TO_UPLOAD);
     if (newLastBluetoothRecordId != lastBluetoothRecordId)

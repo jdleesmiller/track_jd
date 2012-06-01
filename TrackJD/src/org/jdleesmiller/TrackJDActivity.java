@@ -1,25 +1,35 @@
 package org.jdleesmiller;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 import android.app.Activity;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.Environment;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
+import android.widget.Toast;
 
 /**
- * Known bug: changing orientation after starting the app causes problems --
- * we really need to register the listeners in a service, not in an activity.
+ * Known bug: changing orientation after starting the app causes errors (but
+ * does not seem to break the app) -- we really need to register the listeners
+ * in a service, not in an activity.
  */
 public class TrackJDActivity extends Activity {
   /**
    * On a scale of 0 to 1. The intention is to save some battery life.
    */
   private static final float DIMMED_SCREEN_BRIGHTNESS = 0.1f;
-  
+
   /**
    * Assume we're on a LAN.
    */
@@ -28,7 +38,7 @@ public class TrackJDActivity extends Activity {
   @Override
   public void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
-    
+
     setContentView(R.layout.main);
 
     final SharedPreferences prefs = getSharedPreferences(
@@ -70,10 +80,64 @@ public class TrackJDActivity extends Activity {
         }
       });
     dimScreen.setChecked(prefs.getBoolean(Constants.PREF_DIM_SCREEN, false));
-    
+
     // creating the singleton starts the background process -- we should
     // probably use a service instead of this hack
     TrackJDApplication.startIfNotRunning(this);
+  }
+
+  public void clickExportCSVs(View view) throws IOException {
+    SimpleDateFormat timestampFormat = new SimpleDateFormat("yyyyMMddHHmmss");
+    String timestamp = timestampFormat.format(new Date());
+    String fileStem = "track_jd";
+
+    FileOutputStream accelerometerOutputStream = null;
+    FileOutputStream bluetoothOutputStream = null;
+    FileOutputStream gpsOutputStream = null;
+    FileOutputStream orientationOutputStream = null;
+
+    try {
+      accelerometerOutputStream = new FileOutputStream(new File(
+        Environment.getExternalStorageDirectory(), fileStem + "_accelerometer_"
+          + timestamp + ".csv"));
+      TrackJDApplication.dataLayer(this).getAccelerometerAsCSV(
+        accelerometerOutputStream, 0, Integer.MAX_VALUE);
+
+      bluetoothOutputStream = new FileOutputStream(new File(
+        Environment.getExternalStorageDirectory(), fileStem + "_bluetooth_"
+          + timestamp + ".csv"));
+      TrackJDApplication.dataLayer(this).getBluetoothAsCSV(
+        bluetoothOutputStream, 0, Integer.MAX_VALUE);
+
+      gpsOutputStream = new FileOutputStream(new File(
+        Environment.getExternalStorageDirectory(), fileStem + "_gps_"
+          + timestamp + ".csv"));
+      TrackJDApplication.dataLayer(this).getGPSAsCSV(gpsOutputStream, 0,
+        Integer.MAX_VALUE);
+
+      orientationOutputStream = new FileOutputStream(new File(
+        Environment.getExternalStorageDirectory(), fileStem + "_orientation_"
+          + timestamp + ".csv"));
+      TrackJDApplication.dataLayer(this).getOrientationAsCSV(
+        orientationOutputStream, 0, Integer.MAX_VALUE);
+
+      Toast.makeText(this,
+        "wrote data to " + Environment.getExternalStorageDirectory(),
+        Toast.LENGTH_SHORT).show();
+    } catch (FileNotFoundException e) {
+      Toast.makeText(this, "FAILED: " + e.getLocalizedMessage()
+        + "\nMake sure your SD card is not already mounted on your computer.",
+        Toast.LENGTH_LONG).show();
+    } finally {
+      if (accelerometerOutputStream != null)
+        accelerometerOutputStream.close();
+      if (bluetoothOutputStream != null)
+        bluetoothOutputStream.close();
+      if (gpsOutputStream != null)
+        gpsOutputStream.close();
+      if (orientationOutputStream != null)
+        orientationOutputStream.close();
+    }
   }
 
   public void clickStop(View view) {

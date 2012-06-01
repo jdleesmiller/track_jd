@@ -86,7 +86,7 @@ public class DataCollector {
       private float[] orientation = new float[3];
 
       public void onSensorChanged(SensorEvent event) {
-        // this seems to crash sometimes, but I haven't yet figured out why
+        // this was crashing for a while, but I don't think it should now
         try {
           SensorManager.getRotationMatrixFromVector(rotationMatrix, event.values);
           SensorManager.getOrientation(rotationMatrix, orientation);

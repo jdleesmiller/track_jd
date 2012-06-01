@@ -11,14 +11,18 @@ public class TrackJDApplication {
   
   private static TrackJDApplication instance;
   
-  public static void startIfNotRunning(Context context) {
+  public static DataLayer dataLayer(Context context) {
     // only start the data layer once; we never have to stop it
     if (dataLayer == null) {
       dataLayer = new DataLayer(context);
       dataLayer.open();
     }
-    
+    return dataLayer;
+  }
+  
+  public static void startIfNotRunning(Context context) {
     if (instance == null) {
+      dataLayer(context);
       instance = new TrackJDApplication(context);
       instance.start();
     }

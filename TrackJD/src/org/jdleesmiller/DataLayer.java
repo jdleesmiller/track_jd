@@ -1,5 +1,8 @@
 package org.jdleesmiller;
 
+import java.io.OutputStream;
+import java.io.PrintStream;
+
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
@@ -110,13 +113,14 @@ public class DataLayer {
   /**
    * Dump rows recorded with logGPS to CSV.
    * 
-   * @param buf
+   * @param os
    * @param lastId
    * @param maxRecords
    * @return id of last record in the returned CSV, or lastId if no records
    */
-  public long getGPSAsCSV(StringBuilder buf, long lastId, int maxRecords) {
-    buf.append("accuracy,altitude,latitude,longitude,time\n");
+  public long getGPSAsCSV(OutputStream os, long lastId, int maxRecords) {
+    PrintStream ps = new PrintStream(os);
+    ps.print("accuracy,altitude,latitude,longitude,time\n");
     Cursor c = db.rawQuery(
       "SELECT gps_id, accuracy, altitude, latitude, longitude, time FROM "
         + SQLiteHelper.GPS_TABLE + " WHERE gps_id > " + lastId, null);
@@ -124,16 +128,16 @@ public class DataLayer {
     long newLastId = lastId;
     while (c.moveToNext() && records < maxRecords) {
       newLastId = c.getLong(0);
-      buf.append(c.getFloat(1));
-      buf.append(",");
-      buf.append(c.getDouble(2));
-      buf.append(",");
-      buf.append(c.getDouble(3));
-      buf.append(",");
-      buf.append(c.getDouble(4));
-      buf.append(",");
-      buf.append(c.getLong(5));
-      buf.append("\n");
+      ps.print(c.getFloat(1));
+      ps.print(",");
+      ps.print(c.getDouble(2));
+      ps.print(",");
+      ps.print(c.getDouble(3));
+      ps.print(",");
+      ps.print(c.getDouble(4));
+      ps.print(",");
+      ps.print(c.getLong(5));
+      ps.print("\n");
       records += 1;
     }
     return newLastId;
@@ -142,28 +146,29 @@ public class DataLayer {
   /**
    * Dump rows recorded with logAccelerometer to CSV.
    * 
-   * @param buf
+   * @param os
    * @param lastId
    * @param maxRecords
    * @return id of last record in the returned CSV, or lastId if no records
    */
-  public long getAccelerometerAsCSV(StringBuilder buf, long lastId,
+  public long getAccelerometerAsCSV(OutputStream os, long lastId,
     int maxRecords) {
-    buf.append("x,y,z,time\n");
+    PrintStream ps = new PrintStream(os);
+    ps.print("x,y,z,time\n");
     Cursor c = db.rawQuery("SELECT accel_id, x, y, z, time FROM "
       + SQLiteHelper.ACCELEROMETER_TABLE + " WHERE accel_id > " + lastId, null);
     int records = 0;
     long newLastId = lastId;
     while (c.moveToNext() && records < maxRecords) {
       newLastId = c.getLong(0);
-      buf.append(c.getFloat(1));
-      buf.append(",");
-      buf.append(c.getFloat(2));
-      buf.append(",");
-      buf.append(c.getFloat(3));
-      buf.append(",");
-      buf.append(c.getLong(4));
-      buf.append("\n");
+      ps.print(c.getFloat(1));
+      ps.print(",");
+      ps.print(c.getFloat(2));
+      ps.print(",");
+      ps.print(c.getFloat(3));
+      ps.print(",");
+      ps.print(c.getLong(4));
+      ps.print("\n");
       records += 1;
     }
     return newLastId;
@@ -172,28 +177,29 @@ public class DataLayer {
   /**
    * Dump rows recorded with logOrientation to CSV.
    * 
-   * @param buf
+   * @param os
    * @param lastId
    * @param maxRecords
    * @return id of last record in the returned CSV, or lastId if no records
    */
-  public long getOrientationAsCSV(StringBuilder buf, long lastId,
+  public long getOrientationAsCSV(OutputStream os, long lastId,
     int maxRecords) {
-    buf.append("azimuth,pitch,roll,time\n");
+    PrintStream ps = new PrintStream(os);
+    ps.print("azimuth,pitch,roll,time\n");
     Cursor c = db.rawQuery("SELECT orient_id, azimuth, pitch, roll, time FROM "
       + SQLiteHelper.ORIENTATION_TABLE + " WHERE orient_id > " + lastId, null);
     int records = 0;
     long newLastId = lastId;
     while (c.moveToNext() && records < maxRecords) {
       newLastId = c.getLong(0);
-      buf.append(c.getFloat(1));
-      buf.append(",");
-      buf.append(c.getFloat(2));
-      buf.append(",");
-      buf.append(c.getFloat(3));
-      buf.append(",");
-      buf.append(c.getLong(4));
-      buf.append("\n");
+      ps.print(c.getFloat(1));
+      ps.print(",");
+      ps.print(c.getFloat(2));
+      ps.print(",");
+      ps.print(c.getFloat(3));
+      ps.print(",");
+      ps.print(c.getLong(4));
+      ps.print("\n");
       records += 1;
     }
     return newLastId;
@@ -202,26 +208,27 @@ public class DataLayer {
   /**
    * Dump rows recorded with logBluetooth to CSV.
    * 
-   * @param buf
+   * @param os
    * @param lastId
    * @param maxRecords
    * @return id of last record in the returned CSV, or lastId if no records
    */
-  public long getBluetoothAsCSV(StringBuilder buf, long lastId,
+  public long getBluetoothAsCSV(OutputStream os, long lastId,
     int maxRecords) {
-    buf.append("bdaddr,rssi,time\n");
+    PrintStream ps = new PrintStream(os );
+    ps.print("bdaddr,rssi,time\n");
     Cursor c = db.rawQuery("SELECT bluetooth_id, bdaddr, rssi, time FROM "
       + SQLiteHelper.BLUETOOTH_TABLE + " WHERE bluetooth_id > " + lastId, null);
     int records = 0;
     long newLastId = lastId;
     while (c.moveToNext() && records < maxRecords) {
       newLastId = c.getLong(0);
-      buf.append(c.getString(1));
-      buf.append(",");
-      buf.append(c.getInt(2));
-      buf.append(",");
-      buf.append(c.getLong(3));
-      buf.append("\n");
+      ps.print(c.getString(1));
+      ps.print(",");
+      ps.print(c.getInt(2));
+      ps.print(",");
+      ps.print(c.getLong(3));
+      ps.print("\n");
       records += 1;
     }
     return newLastId;
