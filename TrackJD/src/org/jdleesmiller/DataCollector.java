@@ -88,11 +88,12 @@ public class DataCollector {
       public void onSensorChanged(SensorEvent event) {
         // this was crashing for a while, but I don't think it should now
         try {
-          SensorManager.getRotationMatrixFromVector(rotationMatrix, event.values);
+          SensorManager.getRotationMatrixFromVector(rotationMatrix,
+            event.values);
           SensorManager.getOrientation(rotationMatrix, orientation);
           dataLayer.logOrientation(orientation[0], orientation[1],
             orientation[2], eventTimestampToUTC(event.timestamp));
-        } catch(RuntimeException e) {
+        } catch (RuntimeException e) {
           Log.e("DataCollector", "failed to get orientation");
           e.printStackTrace();
           return;

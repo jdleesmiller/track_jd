@@ -32,6 +32,27 @@
         android:layout_width="match_parent"
         android:layout_height="36dp" />
 
+    <CheckBox
+        android:id="@+id/enable_logging"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/enable_logging" />
+
+    <Space
+        android:layout_width="match_parent"
+        android:layout_height="36dp" />
+    
+    <Button
+        android:id="@+id/make_discoverable"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:onClick="clickMakeDiscoverable"
+        android:text="@string/make_discoverable" />
+    
+    <Space
+        android:layout_width="match_parent"
+        android:layout_height="18dp" />
+
     <Button
         android:id="@+id/export_csvs"
         android:layout_width="wrap_content"
@@ -39,14 +60,11 @@
         android:onClick="clickExportCSVs"
         android:text="@string/export_csvs" />
 
-    <Space
-        android:layout_width="match_parent"
-        android:layout_height="36dp" />
-
     <Button
         android:id="@+id/stop"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_gravity="right"
         android:onClick="clickStop"
         android:text="@string/stop" />
 

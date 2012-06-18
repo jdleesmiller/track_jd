@@ -8,6 +8,8 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import android.app.Activity;
+import android.bluetooth.BluetoothAdapter;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Environment;
@@ -80,10 +82,37 @@ public class TrackJDActivity extends Activity {
         }
       });
     dimScreen.setChecked(prefs.getBoolean(Constants.PREF_DIM_SCREEN, false));
+    
+    final CheckBox enableLogging = (CheckBox) findViewById(R.id.enable_logging);
+    enableLogging.setChecked(true);
+    enableLogging
+      .setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+        public void onCheckedChanged(CompoundButton buttonView,
+          boolean isChecked) {
+          if (isChecked) {
+            TrackJDApplication.startIfNotRunning(TrackJDActivity.this);
+          } else {
+            TrackJDApplication.stopIfRunning();
+          }
+        }
+      });
 
     // creating the singleton starts the background process -- we should
     // probably use a service instead of this hack
     TrackJDApplication.startIfNotRunning(this);
+  }
+  
+  /**
+   * Make the device discoverable forever after one prompt. This seems to be
+   * the best we can do (can't do it silently). Note that this will persist
+   * even after the application is closed.
+   */
+  public void clickMakeDiscoverable(View view) {
+    Intent discoverableIntent = new Intent(
+      BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
+    discoverableIntent.putExtra(
+      BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 0);
+    startActivity(discoverableIntent);
   }
 
   public void clickExportCSVs(View view) throws IOException {
@@ -125,9 +154,13 @@ public class TrackJDActivity extends Activity {
         "wrote data to " + Environment.getExternalStorageDirectory(),
         Toast.LENGTH_SHORT).show();
     } catch (FileNotFoundException e) {
-      Toast.makeText(this, "FAILED: " + e.getLocalizedMessage()
-        + "\nMake sure your SD card is not already mounted on your computer.",
-        Toast.LENGTH_LONG).show();
+      Toast
+        .makeText(
+          this,
+          "FAILED: "
+            + e.getLocalizedMessage()
+            + "\nMake sure your SD card is not already mounted on your computer.",
+          Toast.LENGTH_LONG).show();
     } finally {
       if (accelerometerOutputStream != null)
         accelerometerOutputStream.close();

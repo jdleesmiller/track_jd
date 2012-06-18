@@ -6,5 +6,7 @@
     <string name="stop">Stop</string>
     <string name="dim_screen">dim screen</string>
     <string name="export_csvs">Export CSV Files</string>
+    <string name="make_discoverable">Make Discoverable</string>
+    <string name="enable_logging">enable logging</string>
 
 </resources>
