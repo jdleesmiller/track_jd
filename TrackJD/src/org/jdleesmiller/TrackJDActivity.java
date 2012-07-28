@@ -8,8 +8,6 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import android.app.Activity;
-import android.bluetooth.BluetoothAdapter;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Environment;
@@ -101,19 +99,25 @@ public class TrackJDActivity extends Activity {
     // probably use a service instead of this hack
     TrackJDApplication.startIfNotRunning(this);
   }
-  
-  /**
-   * Make the device discoverable forever after one prompt. This seems to be
-   * the best we can do (can't do it silently). Note that this will persist
-   * even after the application is closed.
-   */
-  public void clickMakeDiscoverable(View view) {
-    Intent discoverableIntent = new Intent(
-      BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
-    discoverableIntent.putExtra(
-      BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 0);
-    startActivity(discoverableIntent);
-  }
+
+  //
+  // This should work according to the docs, but the timeout actually remains
+  // at two minutes, at least on my HTC Sensation Z710e.
+  // http://developer.android.com/guide/topics/wireless/bluetooth.html
+  //
+  // There seem to be some long-standing bugs with this part of the API:
+  // http://stackoverflow.com/questions/10906737/extend-android-bluetooth-discoverability
+  //
+  // Fortunately, setting it in the Bluetooth settings screen seems to work, so
+  // I am removing this.
+  //
+//  public void clickMakeDiscoverable(View view) {
+//    Intent discoverableIntent = new Intent(
+//      BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
+//    discoverableIntent.putExtra(
+//      BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 0);
+//    startActivity(discoverableIntent);
+//  }
 
   public void clickExportCSVs(View view) throws IOException {
     SimpleDateFormat timestampFormat = new SimpleDateFormat("yyyyMMddHHmmss");
