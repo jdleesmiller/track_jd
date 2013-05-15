@@ -13,13 +13,13 @@ public class AccelerometerPoint extends AbstractSensorPoint {
   }
   
   @Override
-  void printCsvHeader(PrintStream ps) {
+  public void printCsvHeader(PrintStream ps) {
     super.printCsvHeader(ps);
     ps.print(",x,y,z");
   }
   
   @Override
-  void printCsvData(PrintStream ps) {
+  public void printCsvData(PrintStream ps) {
     super.printCsvData(ps);
     ps.print(',');
     ps.print(values[0]);

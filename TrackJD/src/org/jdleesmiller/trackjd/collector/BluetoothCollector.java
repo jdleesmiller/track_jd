@@ -1,30 +1,37 @@
 package org.jdleesmiller.trackjd.collector;
 
-import java.io.PrintStream;
+import org.jdleesmiller.trackjd.TrackJDService;
+import org.jdleesmiller.trackjd.data.BluetoothDatum;
 
-import org.jdleesmiller.trackjd.CollectorService;
+import com.loopj.android.http.AsyncHttpResponseHandler;
+import com.loopj.android.http.RequestParams;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
-import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 
+/**
+ * Repeatedly scan for Bluetooth devices.
+ */
 public class BluetoothCollector extends AbstractCollector {
+  
+  private static final int MAX_DATA = 100;
 
-  public static final String TABLE_NAME = "bluetooth";
+  private final CollectorBuffer<BluetoothDatum> buffer;
 
   private boolean registered;
   private BluetoothAdapter bluetoothAdapter;
   private BroadcastReceiver bluetoothReceiver;
   private BroadcastReceiver bluetoothDiscoveryFinishedReceiver;
 
-  public BluetoothCollector(CollectorService context) {
+  public BluetoothCollector(TrackJDService context) {
     super(context);
+    
+    this.buffer = new CollectorBuffer<BluetoothDatum>(MAX_DATA);
+        
     registered = false;
 
     bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
@@ -33,19 +40,7 @@ public class BluetoothCollector extends AbstractCollector {
       @Override
       public void onReceive(Context context, Intent intent) {
         if (BluetoothDevice.ACTION_FOUND.equals(intent.getAction())) {
-
-          SQLiteDatabase db = getWritableDb();
-          if (db != null) {
-            BluetoothDevice device = intent
-                .getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-
-            ContentValues values = new ContentValues(3);
-            values.put("bdaddr", device.getAddress());
-            values.put("rssi", intent.getShortExtra(BluetoothDevice.EXTRA_RSSI,
-                Short.MIN_VALUE));
-            values.put("time", System.currentTimeMillis());
-            db.insert(TABLE_NAME, null, values);
-          }
+          buffer.store(new BluetoothDatum(intent));
         }
       }
     };
@@ -83,43 +78,13 @@ public class BluetoothCollector extends AbstractCollector {
   };
 
   @Override
-  public void createTable(SQLiteDatabase db) {
-    db.execSQL("CREATE TABLE " + TABLE_NAME + " (" + //
-        "bluetooth_id INTEGER PRIMARY KEY AUTOINCREMENT," + //
-        "bdaddr CHAR(17)," + //
-        "rssi INTEGER," + //
-        "time INTEGER)");
-  }
-
-  @Override
-  public void dropTable(SQLiteDatabase db) {
-    db.execSQL("DROP TABLE IF EXISTS " + TABLE_NAME);
-  }
-
-  @Override
-  public void printCsvHeader(PrintStream ps) {
-    ps.print("bdaddr,rssi,time\n");
-  }
-
-  @Override
-  public long printCsvData(PrintStream ps, long lastId, int maxRecords) {
-    long newLastId = lastId;
-    SQLiteDatabase db = getReadableDb();
-    if (db != null) {
-      Cursor c = db.rawQuery("SELECT bluetooth_id, bdaddr, rssi, time FROM "
-          + TABLE_NAME + " WHERE bluetooth_id > " + lastId, null);
-      int records = 0;
-      while (c.moveToNext() && records < maxRecords) {
-        newLastId = c.getLong(0);
-        ps.print(c.getString(1));
-        ps.print(",");
-        ps.print(c.getInt(2));
-        ps.print(",");
-        ps.print(c.getLong(3));
-        ps.print("\n");
-        records += 1;
+  public AsyncHttpResponseHandler upload(RequestParams params, int maxDataToUpload) {
+    final int dataUploaded = buffer.addCsvToPost("bt", params, maxDataToUpload);
+    return new AsyncHttpResponseHandler() {
+      @Override
+      public void onSuccess(String arg0) {
+        buffer.clear(dataUploaded);
       }
-    }
-    return newLastId;
+    };
   }
 }

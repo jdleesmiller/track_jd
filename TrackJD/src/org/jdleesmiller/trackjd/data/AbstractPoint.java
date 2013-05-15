@@ -22,7 +22,7 @@ public abstract class AbstractPoint {
    * 
    * @param ps
    */
-  void printCsvHeader(PrintStream ps) {
+  public void printCsvHeader(PrintStream ps) {
     ps.print("time");
   }
   
@@ -32,7 +32,7 @@ public abstract class AbstractPoint {
    * 
    * @param ps
    */
-  void printCsvData(PrintStream ps) {
+  public void printCsvData(PrintStream ps) {
     ps.print(time);
   }
 }

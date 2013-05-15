@@ -2,21 +2,22 @@ package org.jdleesmiller.trackjd.data;
 
 import java.io.PrintStream;
 
-import android.hardware.SensorEvent;
-
+/**
+ * An orientation measurement.
+ */
 public class OrientationDatum extends AbstractSensorPoint {
-  public OrientationDatum(SensorEvent event) {
-    super(event);
+  public OrientationDatum(long eventTimestamp, float [] orientation) {
+    super(eventTimestamp, orientation);
   }
   
   @Override
-  void printCsvHeader(PrintStream ps) {
+  public void printCsvHeader(PrintStream ps) {
     super.printCsvHeader(ps);
-    ps.print(",x,y,z");
+    ps.print(",azimuth,pitch,roll");
   }
   
   @Override
-  void printCsvData(PrintStream ps) {
+  public void printCsvData(PrintStream ps) {
     super.printCsvData(ps);
     ps.print(',');
     ps.print(values[0]);
@@ -25,5 +26,4 @@ public class OrientationDatum extends AbstractSensorPoint {
     ps.print(',');
     ps.print(values[2]);
   }
-
 }

@@ -21,7 +21,7 @@ import android.util.Log;
 /**
  * Background service for collecting data from a collection of sensors.
  */
-public class CollectorService extends Service {
+public class TrackJDService extends Service {
   private boolean started;
 
   private GPSCollector gpsCollector;
@@ -50,7 +50,7 @@ public class CollectorService extends Service {
     collectors = Arrays.asList(gpsCollector, accelerometerCollector,
         orientationCollector, bluetoothCollector);
 
-    dbHelper = new SQLiteHelper(this, collectors);
+    dbHelper = new SQLiteHelper(this);
   }
   
   /*

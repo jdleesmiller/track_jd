@@ -1,6 +1,6 @@
 package org.jdleesmiller.trackjd.collector;
 
-import org.jdleesmiller.trackjd.CollectorService;
+import org.jdleesmiller.trackjd.TrackJDService;
 
 import android.content.Context;
 import android.hardware.SensorManager;
@@ -12,7 +12,7 @@ public abstract class AbstractSensorCollector extends AbstractCollector {
 
   private SensorManager sensorManager;
 
-  public AbstractSensorCollector(CollectorService context) {
+  public AbstractSensorCollector(TrackJDService context) {
     super(context);
     
     sensorManager = (SensorManager) context

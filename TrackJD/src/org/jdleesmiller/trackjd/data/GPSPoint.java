@@ -6,7 +6,8 @@ import android.location.Location;
 
 /**
  * A GPS measurement. Accuracy, altitude, bearing and speed are NaN if they
- * were not recorded. Number of satellites is -1 if it was not recorded.
+ * were not recorded. Number of satellites is Short.MIN_VALUE if it was not
+ * recorded.
  */
 public class GPSPoint extends AbstractPoint {
   private final double latitude;
@@ -51,18 +52,18 @@ public class GPSPoint extends AbstractPoint {
     if (location.getExtras().containsKey("satellites")) {
       this.numSatellites = location.getExtras().getShort("satellites");
     } else {
-      this.numSatellites = -1;
+      this.numSatellites = Short.MIN_VALUE;
     }
   }
 
   @Override
-  void printCsvHeader(PrintStream ps) {
+  public void printCsvHeader(PrintStream ps) {
     super.printCsvHeader(ps);
     ps.print(",latitude,longitude,accuracy,altitude,bearing,speed,numSatellites");
   }
   
   @Override
-  void printCsvData(PrintStream ps) {
+  public void printCsvData(PrintStream ps) {
     super.printCsvData(ps);
     ps.print(',');
     ps.print(latitude);

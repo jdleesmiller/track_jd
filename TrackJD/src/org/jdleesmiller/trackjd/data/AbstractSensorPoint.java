@@ -3,14 +3,18 @@ package org.jdleesmiller.trackjd.data;
 import android.hardware.SensorEvent;
 
 /**
- * A data point from a SensorEvent. 
+ * A data point from a SensorEvent.
  */
 public abstract class AbstractSensorPoint extends AbstractPoint {
-  protected final float [] values;
-  
+  protected final float[] values;
+
+  public AbstractSensorPoint(long eventTimestamp, float[] values) {
+    super(eventTimestampToUTC(eventTimestamp));
+    this.values = values;
+  }
+
   public AbstractSensorPoint(SensorEvent event) {
-    super(eventTimestampToUTC(event.timestamp));
-    this.values = event.values;
+    this(event.timestamp, event.values);
   }
 
   /**
@@ -26,6 +30,6 @@ public abstract class AbstractSensorPoint extends AbstractPoint {
    */
   protected static long eventTimestampToUTC(long timestamp) {
     return System.currentTimeMillis() + (timestamp - System.nanoTime())
-      / 1000000L;
+        / 1000000L;
   }
 }

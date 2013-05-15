@@ -36,14 +36,14 @@ public class TrackJDApplication {
   
   private void start() {
     Log.d("TrackJDApplication", "start");
-    context.startService(new Intent(context, CollectorService.class));
+    context.startService(new Intent(context, TrackJDService.class));
     //dataCollector.start();
     //dataUploader.start();
   }
 
   public void stop() {
     Log.d("TrackJDApplication", "stop");
-    context.stopService(new Intent(context, CollectorService.class));
+    context.stopService(new Intent(context, TrackJDService.class));
     //dataCollector.stop();
     //dataUploader.stop();
   }

@@ -1,14 +1,12 @@
 package org.jdleesmiller.trackjd.collector;
 
-import java.io.PrintStream;
-
-import org.jdleesmiller.trackjd.CollectorService;
+import org.jdleesmiller.trackjd.TrackJDService;
 import org.jdleesmiller.trackjd.Constants;
 import org.jdleesmiller.trackjd.data.AccelerometerPoint;
 
-import android.content.ContentValues;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
+import com.loopj.android.http.AsyncHttpResponseHandler;
+import com.loopj.android.http.RequestParams;
+
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -31,9 +29,7 @@ public class AccelerometerCollector extends AbstractSensorCollector {
    */
   private static final int DEFAULT_INTERVAL = 250000;
 
-  private static final String TABLE_NAME = "accel";
-
-  public AccelerometerCollector(CollectorService context) {
+  public AccelerometerCollector(TrackJDService context) {
     super(context);
     
     this.buffer = new CollectorBuffer<AccelerometerPoint>(MAX_DATA);
@@ -65,46 +61,13 @@ public class AccelerometerCollector extends AbstractSensorCollector {
   }
 
   @Override
-  public void createTable(SQLiteDatabase db) {
-    db.execSQL("CREATE TABLE " + TABLE_NAME + " (" + //
-        "accel_id INTEGER PRIMARY KEY AUTOINCREMENT," + //
-        "x FLOAT," + //
-        "y FLOAT," + //
-        "z FLOAT," + //
-        "time INTEGER)");
-  }
-
-  @Override
-  public void dropTable(SQLiteDatabase db) {
-    db.execSQL("DROP TABLE IF EXISTS " + TABLE_NAME);
-  }
-
-  @Override
-  public void printCsvHeader(PrintStream ps) {
-    ps.print("x,y,z,time\n");
-  }
-
-  @Override
-  public long printCsvData(PrintStream ps, long lastId, int maxRecords) {
-    long newLastId = lastId;
-    SQLiteDatabase db = getReadableDb();
-    if (db != null) {
-      Cursor c = db.rawQuery("SELECT accel_id, x, y, z, time FROM "
-          + TABLE_NAME + " WHERE accel_id > " + lastId, null);
-      int records = 0;
-      while (c.moveToNext() && records < maxRecords) {
-        newLastId = c.getLong(0);
-        ps.print(c.getFloat(1));
-        ps.print(",");
-        ps.print(c.getFloat(2));
-        ps.print(",");
-        ps.print(c.getFloat(3));
-        ps.print(",");
-        ps.print(c.getLong(4));
-        ps.print("\n");
-        records += 1;
+  public AsyncHttpResponseHandler upload(RequestParams params, int maxDataToUpload) {
+    final int dataUploaded = buffer.addCsvToPost("accel", params, maxDataToUpload);
+    return new AsyncHttpResponseHandler() {
+      @Override
+      public void onSuccess(String arg0) {
+        buffer.clear(dataUploaded);
       }
-    }
-    return newLastId;
+    };
   }
 }

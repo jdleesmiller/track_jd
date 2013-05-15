@@ -1,13 +1,12 @@
 package org.jdleesmiller.trackjd.collector;
 
-import java.io.PrintStream;
-
-import org.jdleesmiller.trackjd.CollectorService;
+import org.jdleesmiller.trackjd.TrackJDService;
 import org.jdleesmiller.trackjd.Constants;
+import org.jdleesmiller.trackjd.data.OrientationDatum;
 
-import android.content.ContentValues;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
+import com.loopj.android.http.AsyncHttpResponseHandler;
+import com.loopj.android.http.RequestParams;
+
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -21,36 +20,25 @@ public class OrientationCollector extends AbstractSensorCollector {
    */
   private static final int DEFAULT_INTERVAL = 500000;
 
-  public static final String TABLE_NAME = "orient";
+  private static final int MAX_DATA = 100;
 
-  private SensorEventListener sensorListener;
+  private final CollectorBuffer<OrientationDatum> buffer;
 
-  public OrientationCollector(CollectorService context) {
+  private final SensorEventListener sensorListener;
+
+  public OrientationCollector(TrackJDService context) {
     super(context);
+
+    buffer = new CollectorBuffer<OrientationDatum>(MAX_DATA);
 
     sensorListener = new SensorEventListener() {
       private float[] rotationMatrix = new float[16];
       private float[] orientation = new float[3];
 
       public void onSensorChanged(SensorEvent event) {
-        SQLiteDatabase db = getWritableDb();
-        if (db != null) {
-          try {
-            SensorManager.getRotationMatrixFromVector(rotationMatrix,
-                event.values);
-            SensorManager.getOrientation(rotationMatrix, orientation);
-            ContentValues values = new ContentValues(4);
-            values.put("azimuth", orientation[0]);
-            values.put("pitch", orientation[1]);
-            values.put("roll", orientation[2]);
-            values.put("time", eventTimestampToUTC(event.timestamp));
-            db.insert(TABLE_NAME, null, values);
-          } catch (RuntimeException e) {
-            // this was crashing for a while, but I don't think it should now
-            Log.e("OrientationCollector", "failed to get orientation");
-            e.printStackTrace();
-          }
-        }
+        SensorManager.getRotationMatrixFromVector(rotationMatrix, event.values);
+        SensorManager.getOrientation(rotationMatrix, orientation);
+        buffer.store(new OrientationDatum(event.timestamp, orientation));
       }
 
       public void onAccuracyChanged(Sensor sensor, int accuracy) {
@@ -75,47 +63,15 @@ public class OrientationCollector extends AbstractSensorCollector {
   }
 
   @Override
-  public void createTable(SQLiteDatabase db) {
-    db.execSQL("CREATE TABLE " + TABLE_NAME + " (" + //
-        "orient_id INTEGER PRIMARY KEY AUTOINCREMENT," + //
-        "azimuth FLOAT," + //
-        "pitch FLOAT," + //
-        "roll FLOAT," + //
-        "time INTEGER)");
-  }
-
-  @Override
-  public void dropTable(SQLiteDatabase db) {
-    db.execSQL("DROP TABLE IF EXISTS " + TABLE_NAME);
-  }
-
-  @Override
-  public void printCsvHeader(PrintStream ps) {
-    ps.print("azimuth,pitch,roll,time\n");
-  }
-
-  @Override
-  public long printCsvData(PrintStream ps, long lastId, int maxRecords) {
-    long newLastId = lastId;
-    SQLiteDatabase db = getReadableDb();
-    if (db != null) {
-      Cursor c = db.rawQuery(
-          "SELECT orient_id, azimuth, pitch, roll, time FROM " + TABLE_NAME
-              + " WHERE orient_id > " + lastId, null);
-      int records = 0;
-      while (c.moveToNext() && records < maxRecords) {
-        newLastId = c.getLong(0);
-        ps.print(c.getFloat(1));
-        ps.print(",");
-        ps.print(c.getFloat(2));
-        ps.print(",");
-        ps.print(c.getFloat(3));
-        ps.print(",");
-        ps.print(c.getLong(4));
-        ps.print("\n");
-        records += 1;
+  public AsyncHttpResponseHandler upload(RequestParams params,
+      int maxDataToUpload) {
+    final int dataUploaded = buffer.addCsvToPost("orient", params,
+        maxDataToUpload);
+    return new AsyncHttpResponseHandler() {
+      @Override
+      public void onSuccess(String arg0) {
+        buffer.clear(dataUploaded);
       }
-    }
-    return newLastId;
+    };
   }
 }
