@@ -1,28 +1,19 @@
-package org.jdleesmiller;
+package org.jdleesmiller.trackjd;
 
 import android.content.Context;
+import android.content.Intent;
 import android.util.Log;
 
 public class TrackJDApplication {
-  private final DataCollector dataCollector;
-  private final DataUploader dataUploader;
-  
-  private static DataLayer dataLayer;
+  //private final DataCollector dataCollector;
+  //private final DataUploader dataUploader;
+
+  private Context context;
   
   private static TrackJDApplication instance;
   
-  public static DataLayer dataLayer(Context context) {
-    // only start the data layer once; we never have to stop it
-    if (dataLayer == null) {
-      dataLayer = new DataLayer(context);
-      dataLayer.open();
-    }
-    return dataLayer;
-  }
-  
   public static void startIfNotRunning(Context context) {
     if (instance == null) {
-      dataLayer(context);
       instance = new TrackJDApplication(context);
       instance.start();
     }
@@ -37,20 +28,23 @@ public class TrackJDApplication {
   }
   
   private TrackJDApplication(Context context) {
-    dataCollector = new DataCollector(context, dataLayer);
-
-    dataUploader = new DataUploader(context, dataLayer);
+    this.context = context;
+    
+    //dataCollector = new DataCollector(context, dataLayer);
+    //dataUploader = new DataUploader(context, dataLayer);
   }
   
   private void start() {
     Log.d("TrackJDApplication", "start");
-    dataCollector.start();
-    dataUploader.start();
+    context.startService(new Intent(context, CollectorService.class));
+    //dataCollector.start();
+    //dataUploader.start();
   }
 
   public void stop() {
     Log.d("TrackJDApplication", "stop");
-    dataCollector.stop();
-    dataUploader.stop();
+    context.stopService(new Intent(context, CollectorService.class));
+    //dataCollector.stop();
+    //dataUploader.stop();
   }
 }

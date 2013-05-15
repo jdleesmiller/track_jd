@@ -1,0 +1,140 @@
+/**
+ * 
+ */
+package org.jdleesmiller.trackjd;
+
+import java.util.Arrays;
+import java.util.List;
+
+import org.jdleesmiller.trackjd.collector.AbstractCollector;
+import org.jdleesmiller.trackjd.collector.AccelerometerCollector;
+import org.jdleesmiller.trackjd.collector.BluetoothCollector;
+import org.jdleesmiller.trackjd.collector.GPSCollector;
+import org.jdleesmiller.trackjd.collector.OrientationCollector;
+
+import android.app.Service;
+import android.content.Intent;
+import android.database.sqlite.SQLiteDatabase;
+import android.os.IBinder;
+import android.util.Log;
+
+/**
+ * Background service for collecting data from a collection of sensors.
+ */
+public class CollectorService extends Service {
+  private boolean started;
+
+  private GPSCollector gpsCollector;
+  private AccelerometerCollector accelerometerCollector;
+  private OrientationCollector orientationCollector;
+  private BluetoothCollector bluetoothCollector;
+  private List<AbstractCollector> collectors;
+  private SQLiteHelper dbHelper;
+  private SQLiteDatabase writableDb;
+  private SQLiteDatabase readableDb;
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see android.app.Service#onCreate()
+   */
+  @Override
+  public void onCreate() {
+    started = false;
+
+    gpsCollector = new GPSCollector(this);
+    accelerometerCollector = new AccelerometerCollector(this);
+    orientationCollector = new OrientationCollector(this);
+    bluetoothCollector = new BluetoothCollector(this);
+
+    collectors = Arrays.asList(gpsCollector, accelerometerCollector,
+        orientationCollector, bluetoothCollector);
+
+    dbHelper = new SQLiteHelper(this, collectors);
+  }
+  
+  /*
+   * (non-Javadoc)
+   * 
+   * @see android.app.Service#onStartCommand(android.content.Intent, int, int)
+   */
+  @Override
+  public int onStartCommand(Intent intent, int flags, int startId) {
+    Log.i("CollectorService", "onStartCommand");
+    // make sure we only start the collectors once
+    if (!started) {
+      start();
+    }
+    started = true;
+
+    return START_STICKY;
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see android.app.Service#onDestroy()
+   */
+  @Override
+  public void onDestroy() {
+    Log.i("CollectorService", "onDestroy");
+    stop();
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see android.app.Service#onBind(android.content.Intent)
+   */
+  @Override
+  public IBinder onBind(Intent arg0) {
+    return null;
+  }
+  
+  /**
+   * Call when writing data to the database. Do *not* close this; it is
+   * closed only when the service stops.
+   * 
+   * @return null when service is stopping (or write access not available)
+   */
+  public SQLiteDatabase getWritableDb() {
+    return writableDb;
+  }
+
+  /**
+   * Call when reading data from the database. Do *not* close this; it is
+   * closed only when the service stops.
+   * 
+   * @return null when service is stopping
+   */
+  public SQLiteDatabase getReadableDb() {
+    return readableDb;
+  }
+
+  private void start() {
+    writableDb = dbHelper.getWritableDatabase();
+    readableDb = dbHelper.getWritableDatabase();
+    
+    for (AbstractCollector collector : collectors) {
+      collector.start();
+    }
+  }
+
+  private void stop() {
+    for (AbstractCollector collector : collectors) {
+      collector.stop();
+    }
+    
+    readableDb.close();
+    readableDb = null;
+    writableDb.close();
+    writableDb = null;
+  }
+  
+  /**
+   * @return all collectors
+   */
+  public List<AbstractCollector> getCollectors() {
+    return collectors;
+  }
+}

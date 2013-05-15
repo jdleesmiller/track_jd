@@ -1,4 +1,4 @@
-package org.jdleesmiller;
+package org.jdleesmiller.trackjd;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -6,6 +6,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+
+import org.jdleesmiller.R;
 
 import android.app.Activity;
 import android.content.SharedPreferences;
@@ -120,61 +122,61 @@ public class TrackJDActivity extends Activity {
 //  }
 
   public void clickExportCSVs(View view) throws IOException {
-    SimpleDateFormat timestampFormat = new SimpleDateFormat("yyyyMMddHHmmss");
-    String timestamp = timestampFormat.format(new Date());
-    String fileStem = "track_jd";
-
-    FileOutputStream accelerometerOutputStream = null;
-    FileOutputStream bluetoothOutputStream = null;
-    FileOutputStream gpsOutputStream = null;
-    FileOutputStream orientationOutputStream = null;
-
-    try {
-      accelerometerOutputStream = new FileOutputStream(new File(
-        Environment.getExternalStorageDirectory(), fileStem + "_accelerometer_"
-          + timestamp + ".csv"));
-      TrackJDApplication.dataLayer(this).getAccelerometerAsCSV(
-        accelerometerOutputStream, 0, Integer.MAX_VALUE);
-
-      bluetoothOutputStream = new FileOutputStream(new File(
-        Environment.getExternalStorageDirectory(), fileStem + "_bluetooth_"
-          + timestamp + ".csv"));
-      TrackJDApplication.dataLayer(this).getBluetoothAsCSV(
-        bluetoothOutputStream, 0, Integer.MAX_VALUE);
-
-      gpsOutputStream = new FileOutputStream(new File(
-        Environment.getExternalStorageDirectory(), fileStem + "_gps_"
-          + timestamp + ".csv"));
-      TrackJDApplication.dataLayer(this).getGPSAsCSV(gpsOutputStream, 0,
-        Integer.MAX_VALUE);
-
-      orientationOutputStream = new FileOutputStream(new File(
-        Environment.getExternalStorageDirectory(), fileStem + "_orientation_"
-          + timestamp + ".csv"));
-      TrackJDApplication.dataLayer(this).getOrientationAsCSV(
-        orientationOutputStream, 0, Integer.MAX_VALUE);
-
-      Toast.makeText(this,
-        "wrote data to " + Environment.getExternalStorageDirectory(),
-        Toast.LENGTH_SHORT).show();
-    } catch (FileNotFoundException e) {
-      Toast
-        .makeText(
-          this,
-          "FAILED: "
-            + e.getLocalizedMessage()
-            + "\nMake sure your SD card is not already mounted on your computer.",
-          Toast.LENGTH_LONG).show();
-    } finally {
-      if (accelerometerOutputStream != null)
-        accelerometerOutputStream.close();
-      if (bluetoothOutputStream != null)
-        bluetoothOutputStream.close();
-      if (gpsOutputStream != null)
-        gpsOutputStream.close();
-      if (orientationOutputStream != null)
-        orientationOutputStream.close();
-    }
+//    SimpleDateFormat timestampFormat = new SimpleDateFormat("yyyyMMddHHmmss");
+//    String timestamp = timestampFormat.format(new Date());
+//    String fileStem = "track_jd";
+//
+//    FileOutputStream accelerometerOutputStream = null;
+//    FileOutputStream bluetoothOutputStream = null;
+//    FileOutputStream gpsOutputStream = null;
+//    FileOutputStream orientationOutputStream = null;
+//
+//    try {
+//      accelerometerOutputStream = new FileOutputStream(new File(
+//        Environment.getExternalStorageDirectory(), fileStem + "_accelerometer_"
+//          + timestamp + ".csv"));
+//      TrackJDApplication.dataLayer(this).getAccelerometerAsCSV(
+//        accelerometerOutputStream, 0, Integer.MAX_VALUE);
+//
+//      bluetoothOutputStream = new FileOutputStream(new File(
+//        Environment.getExternalStorageDirectory(), fileStem + "_bluetooth_"
+//          + timestamp + ".csv"));
+//      TrackJDApplication.dataLayer(this).getBluetoothAsCSV(
+//        bluetoothOutputStream, 0, Integer.MAX_VALUE);
+//
+//      gpsOutputStream = new FileOutputStream(new File(
+//        Environment.getExternalStorageDirectory(), fileStem + "_gps_"
+//          + timestamp + ".csv"));
+//      TrackJDApplication.dataLayer(this).getGPSAsCSV(gpsOutputStream, 0,
+//        Integer.MAX_VALUE);
+//
+//      orientationOutputStream = new FileOutputStream(new File(
+//        Environment.getExternalStorageDirectory(), fileStem + "_orientation_"
+//          + timestamp + ".csv"));
+//      TrackJDApplication.dataLayer(this).getOrientationAsCSV(
+//        orientationOutputStream, 0, Integer.MAX_VALUE);
+//
+//      Toast.makeText(this,
+//        "wrote data to " + Environment.getExternalStorageDirectory(),
+//        Toast.LENGTH_SHORT).show();
+//    } catch (FileNotFoundException e) {
+//      Toast
+//        .makeText(
+//          this,
+//          "FAILED: "
+//            + e.getLocalizedMessage()
+//            + "\nMake sure your SD card is not already mounted on your computer.",
+//          Toast.LENGTH_LONG).show();
+//    } finally {
+//      if (accelerometerOutputStream != null)
+//        accelerometerOutputStream.close();
+//      if (bluetoothOutputStream != null)
+//        bluetoothOutputStream.close();
+//      if (gpsOutputStream != null)
+//        gpsOutputStream.close();
+//      if (orientationOutputStream != null)
+//        orientationOutputStream.close();
+//    }
   }
 
   public void clickStop(View view) {

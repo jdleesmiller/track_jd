@@ -1,4 +1,4 @@
-package org.jdleesmiller;
+package org.jdleesmiller.trackjd;
 
 public interface Constants {
   /**
