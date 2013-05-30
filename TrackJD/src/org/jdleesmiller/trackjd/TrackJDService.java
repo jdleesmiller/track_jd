@@ -15,6 +15,7 @@ import org.jdleesmiller.trackjd.collector.OrientationCollector;
 import android.app.Service;
 import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
+import android.os.Binder;
 import android.os.IBinder;
 import android.util.Log;
 
@@ -85,6 +86,15 @@ public class TrackJDService extends Service {
     Log.i("CollectorService", "onDestroy");
     stop();
   }
+  
+  /**
+   * Binder class used by activities to get data to/from this service.
+   */
+  public class LocalBinder extends Binder {
+    public TrackJDService getService() {
+      return TrackJDService.this;
+    }
+  }
 
   /*
    * (non-Javadoc)
@@ -92,8 +102,8 @@ public class TrackJDService extends Service {
    * @see android.app.Service#onBind(android.content.Intent)
    */
   @Override
-  public IBinder onBind(Intent arg0) {
-    return null;
+  public IBinder onBind(Intent intent) {
+    return new LocalBinder();
   }
   
   /**
@@ -130,6 +140,7 @@ public class TrackJDService extends Service {
     for (AbstractCollector collector : collectors) {
       collector.stop();
     }
+    dataUploader.stop();
     
     readableDb.close();
     readableDb = null;

@@ -12,13 +12,13 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <!-- For uploading the results -->
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- For checking whether we're on WiFi -->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <!-- So we can get the WiFi MAC address -->
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <!-- So we can get the Bluetooth MAC address -->
     <uses-permission android:name="android.permission.BLUETOOTH" />
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
-    <!-- For writing CSV files. -->
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
     <application
         android:allowBackup="false"

@@ -5,6 +5,7 @@ import com.loopj.android.http.*;
 import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.net.ConnectivityManager;
 import android.net.wifi.WifiManager;
 import android.os.Handler;
 import android.util.Log;
@@ -19,12 +20,12 @@ public class DataUploader implements Runnable {
    * connectivity will often be intermittent, and we have to retry reasonably
    * quickly.
    */
-  private static final int TIMEOUT_MILLIS = 5000;
+  private static final int TIMEOUT_MILLIS = 10000;
 
   /**
-   * Wait this long before trying to upload.
+   * Wait this long between attempting uploads.
    */
-  private static final long UPLOAD_INTERVAL_MILLIS = 5000;
+  private static final long UPLOAD_INTERVAL_MILLIS = 10000;
 
   /**
    * Max number of records to upload at once. This is over all sensors.
@@ -44,10 +45,29 @@ public class DataUploader implements Runnable {
     this.uploadHandler = new Handler();
   }
 
-  public void start() {
-    uploadHandler.postDelayed(this, UPLOAD_INTERVAL_MILLIS);
+  /**
+   * Check devices's reported WiFi state. Note that this does not imply that we
+   * can actually connect to the server.
+   * 
+   * @return
+   */
+  public boolean isWiFiOn() {
+    return ((ConnectivityManager) service
+        .getSystemService(Context.CONNECTIVITY_SERVICE)).getNetworkInfo(
+        ConnectivityManager.TYPE_WIFI).isConnected();
   }
 
+  /**
+   * Start checking whether to upload. Note that this doesn't actually start an
+   * upload unless we're on WiFi.
+   */
+  public void start() {
+    uploadHandler.post(this);
+  }
+
+  /**
+   * Stop checking whether to upload.
+   */
   public void stop() {
     uploadHandler.removeCallbacks(this);
   }
@@ -60,25 +80,40 @@ public class DataUploader implements Runnable {
     return "http://" + serverName + "/log";
   }
 
+  /**
+   * Runs periodically; checks WiFi state and, if we are connected, attempts an
+   * upload.
+   */
   public void run() {
-    AsyncHttpClient client = new AsyncHttpClient();
-    client.setTimeout(TIMEOUT_MILLIS);
-    RequestParams params = new RequestParams();
-    getDeviceIdentifiers(params);
-    final long lastIdUploaded = service.getDataLogger().addToUpload(params,
-        MAX_RECORDS_TO_UPLOAD);
-    client.post(service, getLogPath(), params, new AsyncHttpResponseHandler() {
-      @Override
-      public void onSuccess(String response) {
-        service.getDataLogger().clearLastUpload(lastIdUploaded);
-      }
+    if (isWiFiOn()) {
+      // we're on WiFi -- try to upload
+      AsyncHttpClient client = new AsyncHttpClient();
+      client.setTimeout(TIMEOUT_MILLIS);
+      RequestParams params = new RequestParams();
+      getDeviceIdentifiers(params);
+      final long lastIdUploaded = service.getDataLogger().addToUpload(params,
+          MAX_RECORDS_TO_UPLOAD);
+      Log.d("DataUploader", "POST: " + getLogPath());
+      client.post(service, getLogPath(), params,
+          new AsyncHttpResponseHandler() {
+            @Override
+            public void onSuccess(String response) {
+              Log.d("DataUploader", "log success");
+              service.getDataLogger().clearLastUpload(lastIdUploaded);
+            }
 
-      @Override
-      public void onFinish() {
-        // always keep polling
-        uploadHandler.postDelayed(DataUploader.this, UPLOAD_INTERVAL_MILLIS);
-      }
-    });
+            @Override
+            public void onFinish() {
+              Log.d("DataUploader", "log finished");
+              // always keep polling
+              uploadHandler.postDelayed(DataUploader.this,
+                  UPLOAD_INTERVAL_MILLIS);
+            }
+          });
+    } else {
+      // no WiFi connection; try again later
+      uploadHandler.postDelayed(this, UPLOAD_INTERVAL_MILLIS);
+    }
   }
 
   /**
