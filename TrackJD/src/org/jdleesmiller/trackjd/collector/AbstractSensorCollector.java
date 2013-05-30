@@ -6,7 +6,7 @@ import android.content.Context;
 import android.hardware.SensorManager;
 
 /**
- * Common features for reading from sensors.
+ * Common features for sensors that use a SensorManager.
  */
 public abstract class AbstractSensorCollector extends AbstractCollector {
 

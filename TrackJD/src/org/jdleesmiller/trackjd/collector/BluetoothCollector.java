@@ -3,9 +3,6 @@ package org.jdleesmiller.trackjd.collector;
 import org.jdleesmiller.trackjd.TrackJDService;
 import org.jdleesmiller.trackjd.data.BluetoothDatum;
 
-import com.loopj.android.http.AsyncHttpResponseHandler;
-import com.loopj.android.http.RequestParams;
-
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
@@ -18,10 +15,6 @@ import android.content.IntentFilter;
  */
 public class BluetoothCollector extends AbstractCollector {
   
-  private static final int MAX_DATA = 100;
-
-  private final CollectorBuffer<BluetoothDatum> buffer;
-
   private boolean registered;
   private BluetoothAdapter bluetoothAdapter;
   private BroadcastReceiver bluetoothReceiver;
@@ -30,8 +23,6 @@ public class BluetoothCollector extends AbstractCollector {
   public BluetoothCollector(TrackJDService context) {
     super(context);
     
-    this.buffer = new CollectorBuffer<BluetoothDatum>(MAX_DATA);
-        
     registered = false;
 
     bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
@@ -40,7 +31,7 @@ public class BluetoothCollector extends AbstractCollector {
       @Override
       public void onReceive(Context context, Intent intent) {
         if (BluetoothDevice.ACTION_FOUND.equals(intent.getAction())) {
-          buffer.store(new BluetoothDatum(intent));
+          logPoint(new BluetoothDatum(intent));
         }
       }
     };
@@ -76,15 +67,4 @@ public class BluetoothCollector extends AbstractCollector {
       getContext().unregisterReceiver(bluetoothDiscoveryFinishedReceiver);
     }
   };
-
-  @Override
-  public AsyncHttpResponseHandler upload(RequestParams params, int maxDataToUpload) {
-    final int dataUploaded = buffer.addCsvToPost("bt", params, maxDataToUpload);
-    return new AsyncHttpResponseHandler() {
-      @Override
-      public void onSuccess(String arg0) {
-        buffer.clear(dataUploaded);
-      }
-    };
-  }
 }

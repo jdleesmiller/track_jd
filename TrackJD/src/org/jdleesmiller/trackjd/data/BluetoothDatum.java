@@ -1,7 +1,5 @@
 package org.jdleesmiller.trackjd.data;
 
-import java.io.PrintStream;
-
 import android.bluetooth.BluetoothDevice;
 import android.content.Intent;
 
@@ -29,17 +27,19 @@ public class BluetoothDatum extends AbstractPoint {
   }
 
   @Override
-  public void printCsvHeader(PrintStream ps) {
-    super.printCsvHeader(ps);
-    ps.print(",bdaddr,rssi");
+  public String getTag() {
+    return "bt_v1";
   }
 
   @Override
-  public void printCsvData(PrintStream ps) {
-    super.printCsvData(ps);
-    ps.print(',');
-    ps.print(bdaddr);
-    ps.print(',');
-    ps.print(rssi);
+  public void printCsvHeader(StringBuilder sb) {
+    sb.append("bdaddr,rssi");
+  }
+
+  @Override
+  public void printCsvData(StringBuilder sb) {
+    sb.append(bdaddr);
+    sb.append(',');
+    sb.append(rssi);
   }
 }

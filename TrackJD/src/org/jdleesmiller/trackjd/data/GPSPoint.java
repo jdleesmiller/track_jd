@@ -1,7 +1,5 @@
 package org.jdleesmiller.trackjd.data;
 
-import java.io.PrintStream;
-
 import android.location.Location;
 
 /**
@@ -57,27 +55,29 @@ public class GPSPoint extends AbstractPoint {
   }
 
   @Override
-  public void printCsvHeader(PrintStream ps) {
-    super.printCsvHeader(ps);
-    ps.print(",latitude,longitude,accuracy,altitude,bearing,speed,numSatellites");
+  public String getTag() {
+    return "gps_v1";
+  }
+
+  @Override
+  public void printCsvHeader(StringBuilder sb) {
+    sb.append("latitude,longitude,accuracy,altitude,bearing,speed,numSatellites");
   }
   
   @Override
-  public void printCsvData(PrintStream ps) {
-    super.printCsvData(ps);
-    ps.print(',');
-    ps.print(latitude);
-    ps.print(',');
-    ps.print(longitude);
-    ps.print(',');
-    ps.print(accuracy);
-    ps.print(',');
-    ps.print(altitude);
-    ps.print(',');
-    ps.print(bearing);
-    ps.print(',');
-    ps.print(speed);
-    ps.print(',');
-    ps.print(numSatellites);
+  public void printCsvData(StringBuilder sb) {
+    sb.append(latitude);
+    sb.append(',');
+    sb.append(longitude);
+    sb.append(',');
+    sb.append(accuracy);
+    sb.append(',');
+    sb.append(altitude);
+    sb.append(',');
+    sb.append(bearing);
+    sb.append(',');
+    sb.append(speed);
+    sb.append(',');
+    sb.append(numSatellites);
   }
 }

@@ -3,7 +3,9 @@ package org.jdleesmiller.trackjd.data;
 import android.hardware.SensorEvent;
 
 /**
- * A data point from a SensorEvent.
+ * A data point from a SensorEvent. These events all store their data in an
+ * array of floats and have a particular time stamp format, which we want
+ * to map into UTC time stamps for consistency with other sensors.
  */
 public abstract class AbstractSensorPoint extends AbstractPoint {
   protected final float[] values;

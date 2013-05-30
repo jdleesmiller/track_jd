@@ -7,8 +7,6 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import org.jdleesmiller.R;
-
 import android.app.Activity;
 import android.content.SharedPreferences;
 import android.os.Bundle;

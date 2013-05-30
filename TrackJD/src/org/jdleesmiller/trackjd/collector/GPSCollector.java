@@ -3,9 +3,6 @@ package org.jdleesmiller.trackjd.collector;
 import org.jdleesmiller.trackjd.TrackJDService;
 import org.jdleesmiller.trackjd.data.GPSPoint;
 
-import com.loopj.android.http.AsyncHttpResponseHandler;
-import com.loopj.android.http.RequestParams;
-
 import android.content.Context;
 import android.location.Location;
 import android.location.LocationListener;
@@ -14,16 +11,11 @@ import android.os.Bundle;
 import android.util.Log;
 
 public class GPSCollector extends AbstractCollector {
-  private static final int MAX_DATA = 100;
-
-  private final CollectorBuffer<GPSPoint> buffer;
   private final LocationListener locationListener;
   private final LocationManager locationManager;
 
   public GPSCollector(TrackJDService context) {
     super(context);
-
-    buffer = new CollectorBuffer<GPSPoint>(MAX_DATA);
 
     locationManager = (LocationManager) context
         .getSystemService(Context.LOCATION_SERVICE);
@@ -42,7 +34,7 @@ public class GPSCollector extends AbstractCollector {
       }
 
       public void onLocationChanged(Location location) {
-        buffer.store(new GPSPoint(location));
+        logPoint(new GPSPoint(location));
       }
     };
   }
@@ -61,18 +53,5 @@ public class GPSCollector extends AbstractCollector {
   @Override
   public void stop() {
     locationManager.removeUpdates(locationListener);
-  }
-
-  @Override
-  public AsyncHttpResponseHandler upload(RequestParams params,
-      int maxDataToUpload) {
-    final int dataUploaded = buffer
-        .addCsvToPost("gps", params, maxDataToUpload);
-    return new AsyncHttpResponseHandler() {
-      @Override
-      public void onSuccess(String arg0) {
-        buffer.clear(dataUploaded);
-      }
-    };
   }
 }

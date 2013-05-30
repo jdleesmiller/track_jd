@@ -2,11 +2,6 @@ package org.jdleesmiller.trackjd;
 
 import com.loopj.android.http.*;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.jdleesmiller.trackjd.collector.AbstractCollector;
-
 import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -32,9 +27,9 @@ public class DataUploader implements Runnable {
   private static final long UPLOAD_INTERVAL_MILLIS = 5000;
 
   /**
-   * Max number of records to upload at once for any single sensor.
+   * Max number of records to upload at once. This is over all sensors.
    */
-  private static final int MAX_RECORDS_TO_UPLOAD = 100;
+  private static final int MAX_RECORDS_TO_UPLOAD = 1000;
 
   private final TrackJDService service;
 
@@ -69,18 +64,13 @@ public class DataUploader implements Runnable {
     AsyncHttpClient client = new AsyncHttpClient();
     client.setTimeout(TIMEOUT_MILLIS);
     RequestParams params = new RequestParams();
-    final List<AsyncHttpResponseHandler> callbacks = new ArrayList<AsyncHttpResponseHandler>();
-    for (AbstractCollector collector : service.getCollectors()) {
-      callbacks.add(collector.upload(params, MAX_RECORDS_TO_UPLOAD));
-    }
     getDeviceIdentifiers(params);
+    final long lastIdUploaded = service.getDataLogger().addToUpload(params,
+        MAX_RECORDS_TO_UPLOAD);
     client.post(service, getLogPath(), params, new AsyncHttpResponseHandler() {
       @Override
       public void onSuccess(String response) {
-        // let collectors delete the data that we just uploaded 
-        for (AsyncHttpResponseHandler callback : callbacks) {
-          callback.onSuccess(response);
-        }
+        service.getDataLogger().clearLastUpload(lastIdUploaded);
       }
 
       @Override

@@ -32,6 +32,8 @@ public class TrackJDService extends Service {
   private SQLiteHelper dbHelper;
   private SQLiteDatabase writableDb;
   private SQLiteDatabase readableDb;
+  private DataLogger dataLogger;
+  private DataUploader dataUploader;
 
   /*
    * (non-Javadoc)
@@ -42,6 +44,11 @@ public class TrackJDService extends Service {
   public void onCreate() {
     started = false;
 
+    dbHelper = new SQLiteHelper(this);
+    
+    dataLogger = new DataLogger(this);
+    dataUploader = new DataUploader(this);
+
     gpsCollector = new GPSCollector(this);
     accelerometerCollector = new AccelerometerCollector(this);
     orientationCollector = new OrientationCollector(this);
@@ -49,8 +56,6 @@ public class TrackJDService extends Service {
 
     collectors = Arrays.asList(gpsCollector, accelerometerCollector,
         orientationCollector, bluetoothCollector);
-
-    dbHelper = new SQLiteHelper(this);
   }
   
   /*
@@ -118,6 +123,7 @@ public class TrackJDService extends Service {
     for (AbstractCollector collector : collectors) {
       collector.start();
     }
+    dataUploader.start();
   }
 
   private void stop() {
@@ -132,7 +138,14 @@ public class TrackJDService extends Service {
   }
   
   /**
-   * @return all collectors
+   * @return not null
+   */
+  public DataLogger getDataLogger() {
+    return dataLogger;
+  }
+
+  /**
+   * @return not null; not empty
    */
   public List<AbstractCollector> getCollectors() {
     return collectors;

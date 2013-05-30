@@ -2,9 +2,7 @@ package org.jdleesmiller.trackjd.collector;
 
 import org.jdleesmiller.trackjd.TrackJDService;
 import org.jdleesmiller.trackjd.Constants;
-
-import com.loopj.android.http.AsyncHttpResponseHandler;
-import com.loopj.android.http.RequestParams;
+import org.jdleesmiller.trackjd.data.AbstractPoint;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -31,16 +29,15 @@ public abstract class AbstractCollector {
   protected SharedPreferences getPreferences() {
     return this.prefs;
   }
-
+  
   /**
-   * Upload buffered data collected for this sensor.
+   * Called by subclasses when they have a new data point to record. 
    * 
-   * @param params
-   * @param maxDataToUpload
-   *          maximum number of data points to upload
+   * @param point not null
    */
-  public abstract AsyncHttpResponseHandler upload(RequestParams params,
-      int maxDataToUpload);
+  protected void logPoint(AbstractPoint point) {
+    this.context.getDataLogger().log(point);
+  }
 
   /**
    * Called by the CollectorService exactly once over the lifetime of the
