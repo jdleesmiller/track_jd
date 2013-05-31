@@ -19,14 +19,17 @@ monitor.jd <- function(lastTimeLong = -1, max.records=500) {
   accelerometer.records <- NULL
   orientation.records <- NULL
   lastTimeLongAccel <- lastTimeLong
+  lastTimeLongOrient <- lastTimeLong
   while (TRUE) {
     cn <- odbcConnect('track_jd')
     gps.records.new <- sqlQuery(cn, paste(
-      'SELECT * FROM gps_records WHERE time > ', lastTimeLong))
+      'SELECT * FROM gps_records WHERE utc_time > ', lastTimeLong))
     accelerometer.records.new <- sqlQuery(cn, paste(
-      'SELECT * FROM accelerometer_records WHERE time > ', lastTimeLongAccel))
+      'SELECT * FROM accelerometer_records WHERE utc_time > ',
+      lastTimeLongAccel))
     orientation.records.new <- sqlQuery(cn, paste(
-      'SELECT * FROM orientation_records WHERE time > ', lastTimeLongOrient))
+      'SELECT * FROM orientation_records WHERE utc_time > ',
+      lastTimeLongOrient))
     odbcClose(cn)
     print(paste(nrow(gps.records.new), '/', nrow(accelerometer.records.new),
           '/', nrow(orientation.records.new),
@@ -54,33 +57,33 @@ monitor.jd <- function(lastTimeLong = -1, max.records=500) {
     
     if (gps.n > 0 || accelerometer.n > 0 || orientation.n > 0) {
       if (gps.n > 0) {
-        lastTimeLong <- max(gps.records$time)
+        lastTimeLong <- max(gps.records$utc_time)
         lastTimeString <- as.POSIXct(lastTimeLong/1000, origin='1970-01-01')
       }
 
       if (accelerometer.n > 0) {
-        lastTimeLongAccel <- max(accelerometer.records$time)
+        lastTimeLongAccel <- max(accelerometer.records$utc_time)
         lastTimeStringAccel <- as.POSIXct(lastTimeLongAccel/1000, origin='1970-01-01')
       }
 
       if (orientation.n > 0) {
-        lastTimeLongOrient <- max(orientation.records$time)
+        lastTimeLongOrient <- max(orientation.records$utc_time)
         lastTimeStringOrient <- as.POSIXct(lastTimeLongOrient/1000, origin='1970-01-01')
       }
       opar <- par(mfrow=c(1,3))
       with(gps.records, plot(longitude, latitude, type='l',
-        main=lastTimeString))
+        main='gps', sub=lastTimeString))
       with(gps.records, points(longitude, latitude))
 
-      with(accelerometer.records, plot(time, x, type='l',
-        main=lastTimeStringAccel, ylim=c(-10,10)))
-      with(accelerometer.records, lines(time, y, col='green'))
-      with(accelerometer.records, lines(time, z, col='red'))
+      with(accelerometer.records, plot(utc_time, x, type='l',
+        main='accel', sub=lastTimeStringAccel, ylim=c(-10,10)))
+      with(accelerometer.records, lines(utc_time, y, col='green'))
+      with(accelerometer.records, lines(utc_time, z, col='red'))
 
-      with(orientation.records, plot(time, azimuth, type='l',
-        main=lastTimeStringOrient, ylim=c(-pi,pi)))
-      with(orientation.records, lines(time, pitch, col='green'))
-      with(orientation.records, lines(time, roll, col='red'))
+      with(orientation.records, plot(utc_time, azimuth, type='l',
+        main='orient', sub=lastTimeStringOrient, ylim=c(-pi,pi)))
+      with(orientation.records, lines(utc_time, pitch, col='green'))
+      with(orientation.records, lines(utc_time, roll, col='red'))
 
       par(opar)
     }

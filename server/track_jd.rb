@@ -45,11 +45,11 @@ end
 #
 def store_gps_records device_id, csv
   sql = 'INSERT INTO gps_records (device_id,
-           accuracy, altitude, latitude, longitude, time)
-         VALUES ($1, $2, $3, $4, $5, $6)'
-  CSV.parse(csv, headers: true).each do |row|
-    $cn.exec(sql, [device_id, row['accuracy'], row['altitude'],
-      row['latitude'], row['longitude'], row['time']])
+           device_gps_record_id, utc_time, latitude, longitude,
+           accuracy, altitude, bearing, speed, num_satellites)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)'
+  CSV.parse(csv, headers: false).each do |row|
+    $cn.exec(sql, [device_id] + row)
   end
 end
 
@@ -57,10 +57,11 @@ end
 # Insert accelerometer records.
 #
 def store_accelerometer_records device_id, csv
-  sql = 'INSERT INTO accelerometer_records (device_id, x, y, z, time)
-         VALUES ($1, $2, $3, $4, $5)'
-  CSV.parse(csv, headers: true).each do |row|
-    $cn.exec(sql, [device_id, row['x'], row['y'], row['z'], row['time']])
+  sql = 'INSERT INTO accelerometer_records (device_id,
+           device_accelerometer_record_id, utc_time, x, y, z)
+         VALUES ($1, $2, $3, $4, $5, $6)'
+  CSV.parse(csv, headers: false).each do |row|
+    $cn.exec(sql, [device_id] + row)
   end
 end
 
@@ -68,24 +69,25 @@ end
 # Insert orientation records.
 #
 def store_orientation_records device_id, csv
-  sql = 'INSERT INTO orientation_records (device_id, azimuth, pitch, roll, time)
-         VALUES ($1, $2, $3, $4, $5)'
-  CSV.parse(csv, headers: true).each do |row|
-    $cn.exec(sql, [device_id, row['azimuth'], row['pitch'], row['roll'],
-             row['time']])
+  sql = 'INSERT INTO orientation_records (device_id,
+           device_orientation_record_id, utc_time, azimuth, pitch, roll)
+         VALUES ($1, $2, $3, $4, $5, $6)'
+  CSV.parse(csv, headers: false).each do |row|
+    $cn.exec(sql, [device_id] + row)
   end
 end
+
 #
 # Insert Bluetooth scan records.
 #
 def store_bluetooth_records device_id, csv
-  sql = 'INSERT INTO bluetooth_records (device_id, bdaddr, rssi, time)
-         VALUES ($1, $2, $3, $4)'
-  CSV.parse(csv, headers: true).each do |row|
-    $cn.exec(sql, [device_id, row['bdaddr'], row['rssi'], row['time']])
+  sql = 'INSERT INTO bluetooth_records (device_id,
+           device_bluetooth_record_id, utc_time, bdaddr, rssi)
+         VALUES ($1, $2, $3, $4, $5)'
+  CSV.parse(csv, headers: false).each do |row|
+    $cn.exec(sql, [device_id] + row)
   end
 end
-
 
 #
 # define web server 
@@ -99,17 +101,20 @@ track_jd = Rack::Builder.new do
     run Proc.new {|env|
       req = Rack::Request.new(env)
 
-      device_id = lookup_device req.ip, req.params
+      device_id = lookup_device(req.ip, req.params)
+      puts "received data from device #{device_id} (#{req.ip})"
 
-      store_gps_records(device_id, req.params['gps']) if req.params['gps']
+      store_gps_records(device_id,
+        req.params['gps_v1'][:tempfile]) if req.params['gps_v1']
 
-      store_accelerometer_records(device_id, req.params['accel']) if
-        req.params['accel']
+      store_accelerometer_records(device_id,
+        req.params['accel_v1'][:tempfile]) if req.params['accel_v1']
 
-      store_orientation_records(device_id, req.params['orient']) if
-        req.params['orient']
+      store_orientation_records(device_id,
+        req.params['orient_v1'][:tempfile]) if req.params['orient_v1']
 
-      store_bluetooth_records(device_id, req.params['bt']) if req.params['bt']
+      store_bluetooth_records(device_id,
+        req.params['bt_v1'][:tempfile]) if req.params['bt_v1']
 
       [200, {"Content-Type" => "text/plain"}, ""]
     }

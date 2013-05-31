@@ -19,32 +19,39 @@ CREATE TABLE devices (
 CREATE TABLE gps_records (
   gps_record_id SERIAL PRIMARY KEY,
   device_id INTEGER REFERENCES devices(device_id),
-  accuracy REAL,
-  altitude DOUBLE PRECISION,
+  device_gps_record_id INTEGER,
+  utc_time BIGINT,
   latitude DOUBLE PRECISION,
   longitude DOUBLE PRECISION,
-  time BIGINT);
+  accuracy REAL,
+  altitude DOUBLE PRECISION,
+  bearing REAL,
+  speed REAL,
+  num_satellites SMALLINT);
 
 CREATE TABLE accelerometer_records (
   accelerometer_record_id SERIAL PRIMARY KEY,
   device_id INTEGER REFERENCES devices(device_id),
+  device_accelerometer_record_id INTEGER,
+  utc_time BIGINT,
   x REAL,
   y REAL,
-  z REAL,
-  time BIGINT);
+  z REAL);
 
 CREATE TABLE orientation_records (
   orientation_record_id SERIAL PRIMARY KEY,
   device_id INTEGER REFERENCES devices(device_id),
+  device_orientation_record_id INTEGER,
+  utc_time BIGINT,
   azimuth REAL,
   pitch REAL,
-  roll REAL,
-  time BIGINT);
+  roll REAL);
 
 CREATE TABLE bluetooth_records (
   bluetooth_record_id SERIAL PRIMARY KEY,
   device_id INTEGER REFERENCES devices(device_id),
+  device_bluetooth_record_id INTEGER,
+  utc_time BIGINT,
   bdaddr CHAR(17),
-  RSSI INT8,
-  time BIGINT);
+  RSSI INT8);
 
