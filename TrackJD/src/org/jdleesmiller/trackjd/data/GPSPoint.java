@@ -14,7 +14,7 @@ public class GPSPoint extends AbstractPoint {
   private final double altitude;
   private final float bearing;
   private final float speed;
-  private final short numSatellites;
+  private final int numSatellites;
 
   public GPSPoint(Location location) {
     super(location.getTime());
@@ -46,11 +46,13 @@ public class GPSPoint extends AbstractPoint {
       this.speed = Float.NaN;
     }
 
-    // TODO is this really a short?
+    // note: this always seems to return 0; this appears to be a bug; see
+    // https://android-review.googlesource.com/#/c/30990/
+    // there may be other ways of getting this number
     if (location.getExtras().containsKey("satellites")) {
-      this.numSatellites = location.getExtras().getShort("satellites");
+      this.numSatellites = location.getExtras().getInt("satellites");
     } else {
-      this.numSatellites = Short.MIN_VALUE;
+      this.numSatellites = Integer.MIN_VALUE;
     }
   }
 
