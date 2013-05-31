@@ -112,7 +112,7 @@ public class DataLogger {
       String currentTag = null;
       while (c.moveToNext()) {
         String tag = c.getString(0);
-        if (tag != currentTag) {
+        if (!tag.equals(currentTag)) {
           // starting a new file; store the previous file, if any
           if (currentTag != null) {
             ps.flush();
@@ -126,11 +126,18 @@ public class DataLogger {
 
         ps.print(lastId);
         ps.print(',');
-        ps.print(c.getLong(2)); // utc time
+        ps.print(c.getLong(2)); // UTC time
         ps.print(',');
-        ps.print(c.getString(3)); // utc time
+        ps.print(c.getString(3)); // rest of CSV
         ps.print('\n');
       }
+      
+      // upload the last file
+      if (currentTag != null) {
+        ps.flush();
+        params.put(currentTag, new ByteArrayInputStream(os.toByteArray()));
+      }
+      
       return lastId;
     } else {
       return 0;

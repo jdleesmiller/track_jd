@@ -20,17 +20,17 @@ public class DataUploader implements Runnable {
    * connectivity will often be intermittent, and we have to retry reasonably
    * quickly.
    */
-  private static final int TIMEOUT_MILLIS = 10000;
+  private static final int TIMEOUT_MILLIS = 5000;
 
   /**
    * Wait this long between attempting uploads.
    */
-  private static final long UPLOAD_INTERVAL_MILLIS = 10000;
+  private static final long UPLOAD_INTERVAL_MILLIS = 5000;
 
   /**
    * Max number of records to upload at once. This is over all sensors.
    */
-  private static final int MAX_RECORDS_TO_UPLOAD = 1000;
+  private static final int MAX_RECORDS_TO_UPLOAD = 5000;
 
   private final TrackJDService service;
 
@@ -90,7 +90,7 @@ public class DataUploader implements Runnable {
       AsyncHttpClient client = new AsyncHttpClient();
       client.setTimeout(TIMEOUT_MILLIS);
       RequestParams params = new RequestParams();
-      getDeviceIdentifiers(params);
+      addDeviceIdentifiers(params);
       final long lastIdUploaded = service.getDataLogger().addToUpload(params,
           MAX_RECORDS_TO_UPLOAD);
       Log.d("DataUploader", "POST: " + getLogPath());
@@ -126,7 +126,7 @@ public class DataUploader implements Runnable {
    * 
    * @param postData
    */
-  public void getDeviceIdentifiers(RequestParams params) {
+  private void addDeviceIdentifiers(RequestParams params) {
     params.put("installation", Installation.id(service));
 
     try {
