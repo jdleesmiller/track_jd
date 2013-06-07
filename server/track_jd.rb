@@ -119,6 +119,11 @@ track_jd = Rack::Builder.new do
       [200, {"Content-Type" => "text/plain"}, ""]
     }
   end
+  map '/' do
+    run Proc.new {|env|
+      [200, {"Content-Type" => "text/plain"}, "Hello from the TrackJD server."]
+    }
+  end
 end
 
 #
