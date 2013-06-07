@@ -1,8 +1,8 @@
-package org.jdleesmiller.trackjd.collector;
+package org.thereflectproject.trackjd.collector;
 
-import org.jdleesmiller.trackjd.TrackJDService;
-import org.jdleesmiller.trackjd.Constants;
-import org.jdleesmiller.trackjd.data.OrientationDatum;
+import org.thereflectproject.trackjd.Constants;
+import org.thereflectproject.trackjd.TrackJDService;
+import org.thereflectproject.trackjd.data.OrientationPoint;
 
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -29,7 +29,7 @@ public class OrientationCollector extends AbstractSensorCollector {
       public void onSensorChanged(SensorEvent event) {
         SensorManager.getRotationMatrixFromVector(rotationMatrix, event.values);
         SensorManager.getOrientation(rotationMatrix, orientation);
-        logPoint(new OrientationDatum(event.timestamp, orientation));
+        logPoint(new OrientationPoint(event.timestamp, orientation));
       }
 
       public void onAccuracyChanged(Sensor sensor, int accuracy) {

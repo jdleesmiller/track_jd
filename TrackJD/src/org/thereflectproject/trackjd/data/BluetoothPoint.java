@@ -1,4 +1,4 @@
-package org.jdleesmiller.trackjd.data;
+package org.thereflectproject.trackjd.data;
 
 import android.bluetooth.BluetoothDevice;
 import android.content.Intent;
@@ -6,7 +6,7 @@ import android.content.Intent;
 /**
  * A single Bluetooth device detection.
  */
-public class BluetoothDatum extends AbstractPoint {
+public class BluetoothPoint extends AbstractPoint {
 
   private final String bdaddr;
   private final short rssi;
@@ -15,7 +15,7 @@ public class BluetoothDatum extends AbstractPoint {
    * @param intent
    *          a BluetoothDevice.ACTION_FOUND intent
    */
-  public BluetoothDatum(Intent intent) {
+  public BluetoothPoint(Intent intent) {
     super(System.currentTimeMillis());
 
     BluetoothDevice device = intent

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="org.jdleesmiller.trackjd"
+    package="org.thereflectproject.trackjd"
     android:versionCode="3"
     android:versionName="2.0" >
 
@@ -25,7 +25,7 @@
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name" >
         <activity
-            android:name=".TrackJDActivity"
+            android:name="org.thereflectproject.trackjd.TrackJDActivity"
             android:label="@string/app_name" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -35,7 +35,7 @@
         </activity>
 
         <service
-            android:name=".TrackJDService"
+            android:name="org.thereflectproject.trackjd.TrackJDService"
             android:exported="false" >
         </service>
     </application>

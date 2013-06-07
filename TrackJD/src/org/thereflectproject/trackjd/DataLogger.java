@@ -1,10 +1,10 @@
-package org.jdleesmiller.trackjd;
+package org.thereflectproject.trackjd;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 
-import org.jdleesmiller.trackjd.data.AbstractPoint;
+import org.thereflectproject.trackjd.data.AbstractPoint;
 
 import com.loopj.android.http.RequestParams;
 

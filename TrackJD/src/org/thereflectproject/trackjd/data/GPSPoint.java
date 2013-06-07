@@ -1,4 +1,4 @@
-package org.jdleesmiller.trackjd.data;
+package org.thereflectproject.trackjd.data;
 
 import android.location.Location;
 

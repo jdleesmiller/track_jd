@@ -1,7 +1,7 @@
-package org.jdleesmiller.trackjd.collector;
+package org.thereflectproject.trackjd.collector;
 
-import org.jdleesmiller.trackjd.TrackJDService;
-import org.jdleesmiller.trackjd.data.BluetoothDatum;
+import org.thereflectproject.trackjd.TrackJDService;
+import org.thereflectproject.trackjd.data.BluetoothPoint;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -31,7 +31,7 @@ public class BluetoothCollector extends AbstractCollector {
       @Override
       public void onReceive(Context context, Intent intent) {
         if (BluetoothDevice.ACTION_FOUND.equals(intent.getAction())) {
-          logPoint(new BluetoothDatum(intent));
+          logPoint(new BluetoothPoint(intent));
         }
       }
     };

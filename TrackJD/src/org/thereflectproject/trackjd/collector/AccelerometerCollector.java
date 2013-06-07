@@ -1,8 +1,8 @@
-package org.jdleesmiller.trackjd.collector;
+package org.thereflectproject.trackjd.collector;
 
-import org.jdleesmiller.trackjd.TrackJDService;
-import org.jdleesmiller.trackjd.Constants;
-import org.jdleesmiller.trackjd.data.AccelerometerPoint;
+import org.thereflectproject.trackjd.Constants;
+import org.thereflectproject.trackjd.TrackJDService;
+import org.thereflectproject.trackjd.data.AccelerometerPoint;
 
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;

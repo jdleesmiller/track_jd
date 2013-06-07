@@ -1,16 +1,16 @@
 /**
  * 
  */
-package org.jdleesmiller.trackjd;
+package org.thereflectproject.trackjd;
 
 import java.util.Arrays;
 import java.util.List;
 
-import org.jdleesmiller.trackjd.collector.AbstractCollector;
-import org.jdleesmiller.trackjd.collector.AccelerometerCollector;
-import org.jdleesmiller.trackjd.collector.BluetoothCollector;
-import org.jdleesmiller.trackjd.collector.GPSCollector;
-import org.jdleesmiller.trackjd.collector.OrientationCollector;
+import org.thereflectproject.trackjd.collector.AbstractCollector;
+import org.thereflectproject.trackjd.collector.AccelerometerCollector;
+import org.thereflectproject.trackjd.collector.BluetoothCollector;
+import org.thereflectproject.trackjd.collector.GPSCollector;
+import org.thereflectproject.trackjd.collector.OrientationCollector;
 
 import android.app.Service;
 import android.content.Intent;

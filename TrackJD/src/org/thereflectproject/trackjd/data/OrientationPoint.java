@@ -1,23 +1,21 @@
-package org.jdleesmiller.trackjd.data;
-
-import android.hardware.SensorEvent;
+package org.thereflectproject.trackjd.data;
 
 /**
- * An accelerometer measurement.
+ * An orientation measurement.
  */
-public class AccelerometerPoint extends AbstractSensorPoint {
-  public AccelerometerPoint(SensorEvent event) {
-    super(event);
+public class OrientationPoint extends AbstractSensorPoint {
+  public OrientationPoint(long eventTimestamp, float [] orientation) {
+    super(eventTimestamp, orientation);
   }
 
   @Override
   public String getTag() {
-    return "accel_v1";
+    return "orient_v1";
   }
   
   @Override
   public void printCsvHeader(StringBuilder sb) {
-    sb.append("x,y,z");
+    sb.append("azimuth,pitch,roll");
   }
   
   @Override

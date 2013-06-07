@@ -1,4 +1,6 @@
-package org.jdleesmiller.trackjd;
+package org.thereflectproject.trackjd;
+
+import org.thereflectproject.trackjd.R;
 
 import android.app.Activity;
 import android.content.ComponentName;

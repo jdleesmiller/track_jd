@@ -1,7 +1,7 @@
-package org.jdleesmiller.trackjd.collector;
+package org.thereflectproject.trackjd.collector;
 
-import org.jdleesmiller.trackjd.TrackJDService;
-import org.jdleesmiller.trackjd.data.GPSPoint;
+import org.thereflectproject.trackjd.TrackJDService;
+import org.thereflectproject.trackjd.data.GPSPoint;
 
 import android.content.Context;
 import android.location.Location;

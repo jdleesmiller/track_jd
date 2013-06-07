@@ -1,4 +1,4 @@
-package org.jdleesmiller.trackjd;
+package org.thereflectproject.trackjd;
 
 import android.content.Context;
 import android.content.Intent;

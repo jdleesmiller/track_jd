@@ -1,6 +1,6 @@
-package org.jdleesmiller.trackjd.collector;
+package org.thereflectproject.trackjd.collector;
 
-import org.jdleesmiller.trackjd.TrackJDService;
+import org.thereflectproject.trackjd.TrackJDService;
 
 import android.content.Context;
 import android.hardware.SensorManager;
