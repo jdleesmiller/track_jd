@@ -1,22 +1,20 @@
 = TrackJD
 
 A simple Android app and supporting infrastructure for reading sensor data from
-a phone and sending it (e.g. over WiFi) to a database on a server. Also includes
+a smartphone and sending it over WiFi to a database on a server. Also includes
 a simple visualisation component written in R.
-
-This was built for a one-day vehicle tracking experiment, it was my first
-Android app, and it was written mainly on trains. It is still pretty rough.
 
 == Architecture
 
 TrackJD:
-* an Android app
-* records sensor data locally in an SQLite database
-* periodically posts new data to the server over HTTP
+* an Android app 
+* a background service records sensor data locally in an SQLite database
+* it periodically posts data to the server over HTTP (over WiFi only) and
+  removes it from the device
 
-server: 
-* a very simple web server in ruby
-* accepts data from the clients and stores them in PostgreSQL a database
+server:
+* a very simple web server in ruby (Rack)
+* accepts data from the clients and stores them in a PostgreSQL database
 
 monitor:
 * an R script that extracts the latest data from the PostgreSQL database and
@@ -30,20 +28,29 @@ TrackJD:
 * Eclipse with the appropriate Android development plug-in
 
 server:
-* Ruby 1.9.3, PostgreSQL 8.4
-* use bundler to get the required gems
-* tested only on Linux (Debian 6 squeeze)
+* Ruby 1.9.3, PostgreSQL (see setup instructions below)
 
 monitor:
 * R 2.15.0
 * RODBC with appropriate datasources; see comments in monitor.R
-* tested only on Linux (Debian 6 squeeze)
+
+== Server Setup Instructions
+
+These instructions assume that you are running on *nix.
+
+First, you need Ruby 1.9.3. If you cannot install it via your package manager,
+you can install it using the ruby version manager (RVM) (https://rvm.io). The
+current installation commands are:
+  \curl -L https://get.rvm.io | bash -s stable --ruby
+  rvm install ruby-1.9.3
+
+You can set up and run the server with 
+  cd server
+  psql postgres <create_db.sql
+  bundle install
+  nohup ruby track_jd.rb &
 
 == Known Bugs
-
-The Android app crashes sometimes; I think this is due to application life cycle
-issues. It should be restructured to use a Service so that it does not rely on
-always being open.
 
 The monitoring script needs cleanup, and it doesn't handle multiple devices
 reporting at once.
@@ -55,7 +62,7 @@ really be configurable from the server.
 
 (The MIT license.)
 
-Copyright (c) 2012 John Lees-Miller
+Copyright (c) 2012-2013 John Lees-Miller
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
