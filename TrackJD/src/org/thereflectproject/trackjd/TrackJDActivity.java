@@ -132,20 +132,6 @@ public class TrackJDActivity extends Activity {
         });
     dimScreen.setChecked(prefs.getBoolean(Constants.PREF_DIM_SCREEN, false));
 
-    final CheckBox enableLogging = (CheckBox) findViewById(R.id.enable_logging);
-    enableLogging.setChecked(true);
-    enableLogging
-        .setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-          public void onCheckedChanged(CompoundButton buttonView,
-              boolean isChecked) {
-            if (isChecked) {
-              TrackJDService.startBackgroundService(TrackJDActivity.this);
-            } else {
-              TrackJDService.stopBackgroundService(TrackJDActivity.this);
-            }
-          }
-        });
-
     final TextView pointsOnDevice = (TextView) findViewById(R.id.points_on_device);
     final int POINTS_ON_DEVICE_UPDATE_DELAY = 1000; // ms
     handler.post(new Runnable() {

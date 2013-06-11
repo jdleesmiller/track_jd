@@ -32,12 +32,6 @@
         android:layout_width="match_parent"
         android:layout_height="36dp" />
 
-    <CheckBox
-        android:id="@+id/enable_logging"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/enable_logging" />
-
     <Space
         android:layout_width="match_parent"
         android:layout_height="36dp" />

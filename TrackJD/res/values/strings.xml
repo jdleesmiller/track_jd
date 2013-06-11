@@ -6,7 +6,6 @@
     <string name="stop">Stop</string>
     <string name="dim_screen">dim screen</string>
     <string name="export_csvs">Export CSV Files</string>
-    <string name="enable_logging">enable logging</string>
     <string name="points_on_device_label">points on device:</string>
 
 </resources>
