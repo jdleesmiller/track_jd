@@ -1,7 +1,9 @@
 package org.thereflectproject.trackjd.data;
 
 /**
- * An orientation measurement.
+ * An orientation measurement. The orientation is measured in terms of azimuth,
+ * pitch and roll in the coordinate system defined for this Android API method:
+ * http://developer.android.com/reference/android/hardware/SensorManager.html#getOrientation(float[],%20float[])
  */
 public class OrientationPoint extends AbstractSensorPoint {
   public OrientationPoint(long eventTimestamp, float [] orientation) {
@@ -12,12 +14,12 @@ public class OrientationPoint extends AbstractSensorPoint {
   public String getTag() {
     return "orient_v1";
   }
-  
-  @Override
-  public void printCsvHeader(StringBuilder sb) {
-    sb.append("azimuth,pitch,roll");
-  }
-  
+   
+  /**
+   * Format: azimuth, pitch, roll.
+   * 
+   * @see org.thereflectproject.trackjd.data.AbstractPoint#printCsvData(java.lang.StringBuilder)
+   */
   @Override
   public void printCsvData(StringBuilder sb) {
     sb.append(values[0]);

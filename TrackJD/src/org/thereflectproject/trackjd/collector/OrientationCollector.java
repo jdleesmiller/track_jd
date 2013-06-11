@@ -10,6 +10,9 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.util.Log;
 
+/**
+ * Collect orientation data. See OrientationPoint for data format.
+ */
 public class OrientationCollector extends AbstractSensorCollector {
 
   /**

@@ -70,26 +70,6 @@ public class DataLogger {
   }
 
   /**
-   * Store a data point in the database.
-   * 
-   * @param point
-   */
-  public void log(AbstractPoint point) {
-    SQLiteDatabase db = this.service.getWritableDb();
-    if (db != null) {
-      ContentValues values = new ContentValues();
-      values.put("time", point.getUTCTime());
-      values.put("tag", point.getTag());
-
-      StringBuilder sb = new StringBuilder();
-      point.printCsvData(sb);
-      values.put("csv", sb.toString());
-
-      db.insert("data", null, values);
-    }
-  }
-
-  /**
    * 
    * @param params
    * 
@@ -173,6 +153,26 @@ public class DataLogger {
       }
     } else {
       return 0;
+    }
+  }
+
+  /**
+   * Store a data point in the database.
+   * 
+   * @param point
+   */
+  public void log(AbstractPoint point) {
+    SQLiteDatabase db = this.service.getWritableDb();
+    if (db != null) {
+      ContentValues values = new ContentValues();
+      values.put("time", point.getUTCTime());
+      values.put("tag", point.getTag());
+
+      StringBuilder sb = new StringBuilder();
+      point.printCsvData(sb);
+      values.put("csv", sb.toString());
+
+      db.insert("data", null, values);
     }
   }
 }

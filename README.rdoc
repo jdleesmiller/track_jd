@@ -6,11 +6,12 @@ a simple visualisation component written in R.
 
 == Architecture
 
-TrackJD:
-* an Android app 
-* a background service records sensor data locally in an SQLite database
-* it periodically posts data to the server over HTTP (over WiFi only) and
-  removes it from the device
+TrackJD (Android app):
+* A background service records sensor data locally in an SQLite database and,
+  when the device is connected to WiFi, it posts the data to the server (below).
+* Each sensor has a Collector (derived from AbstractCollector) that listens to
+  the sensor. It creates a data point (derived from AbstractPoint) appropriate
+  for that sensor and stores it (using the DataLogger).
 
 server:
 * a very simple web server in ruby (Rack)

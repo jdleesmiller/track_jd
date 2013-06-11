@@ -35,14 +35,6 @@ public abstract class AbstractPoint {
   }
   
   /**
-   * Print the header row for data in comma-separated value format, without
-   * the time and without a trailing newline.
-   * 
-   * @param ps not null
-   */
-  public abstract void printCsvHeader(StringBuilder sb);
-  
-  /**
    * Print the point in comma-separated value format, without the time
    * and without a trailing newline.
    * 

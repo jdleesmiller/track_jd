@@ -20,17 +20,26 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 /**
+ * The app's main activity. It's currently very basic: just some monitoring
+ * and a few options. 
  */
 public class TrackJDActivity extends Activity {
-  /**
-   * On a scale of 0 to 1. The intention is to save some battery life.
-   */
-  private static final float DIMMED_SCREEN_BRIGHTNESS = 0.1f;
-
   /**
    * Assume we're on a LAN.
    */
   private static final String DEFAULT_SERVER_NAME = "192.168.x.x:3666";
+
+  /**
+   * On a scale of 0 to 1. The intention is to save some battery life if the
+   * device is doing nothing but logging.
+   */
+  private static final float DIMMED_SCREEN_BRIGHTNESS = 0.1f;
+
+  /**
+   * Reference to the background service, if it's running, or null, if we've
+   * lost the connection.
+   */
+  private TrackJDService service;
 
   /**
    * Connection to the background service. We have to keep a reference to this
@@ -39,11 +48,23 @@ public class TrackJDActivity extends Activity {
   private ServiceConnection serviceConnection;
 
   /**
-   * Reference to the background service, if it's running, or null, if we've
-   * lost the connection.
+   * Called when the user clicks the Stop button. This stops the background
+   * service and closes the app.
+   * 
+   * @param view
    */
-  private TrackJDService service;
+  public void clickStop(View view) {
+    if (service != null) {
+      unbindService(serviceConnection);
+      service = null;
+    }
+    TrackJDService.stopBackgroundService(this);
+    this.finish();
+  }
 
+  /* (non-Javadoc)
+   * @see android.app.Activity#onCreate(android.os.Bundle)
+   */
   @Override
   public void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
@@ -53,20 +74,19 @@ public class TrackJDActivity extends Activity {
     final SharedPreferences prefs = getSharedPreferences(
         Constants.PREFS_FILE_NAME, MODE_PRIVATE);
 
-    // start the background service
-    TrackJDApplication.startIfNotRunning(this);
+    TrackJDService.startBackgroundService(this);
 
     // bind to the background service
     serviceConnection = new ServiceConnection() {
-      public void onServiceDisconnected(ComponentName name) {
-        Log.i("TrackJDActivity", "background service disconnected");
-        TrackJDActivity.this.service = null;
-      }
-
       public void onServiceConnected(ComponentName name, IBinder service) {
         Log.i("TrackJDActivity", "background service connected");
         TrackJDService.LocalBinder binder = (TrackJDService.LocalBinder) service;
         TrackJDActivity.this.service = binder.getService();
+      }
+
+      public void onServiceDisconnected(ComponentName name) {
+        Log.i("TrackJDActivity", "background service disconnected");
+        TrackJDActivity.this.service = null;
       }
     };
     this.bindService(new Intent(this, TrackJDService.class), serviceConnection,
@@ -119,9 +139,9 @@ public class TrackJDActivity extends Activity {
           public void onCheckedChanged(CompoundButton buttonView,
               boolean isChecked) {
             if (isChecked) {
-              TrackJDApplication.startIfNotRunning(TrackJDActivity.this);
+              TrackJDService.startBackgroundService(TrackJDActivity.this);
             } else {
-              TrackJDApplication.stopIfRunning();
+              TrackJDService.stopBackgroundService(TrackJDActivity.this);
             }
           }
         });
@@ -140,6 +160,7 @@ public class TrackJDActivity extends Activity {
       }
     });
   }
+}
 
   //
   // This should work according to the docs, but the timeout actually remains
@@ -159,71 +180,3 @@ public class TrackJDActivity extends Activity {
   // BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 0);
   // startActivity(discoverableIntent);
   // }
-
-  // public void clickExportCSVs(View view) throws IOException {
-  // SimpleDateFormat timestampFormat = new SimpleDateFormat("yyyyMMddHHmmss");
-  // String timestamp = timestampFormat.format(new Date());
-  // String fileStem = "track_jd";
-  //
-  // FileOutputStream accelerometerOutputStream = null;
-  // FileOutputStream bluetoothOutputStream = null;
-  // FileOutputStream gpsOutputStream = null;
-  // FileOutputStream orientationOutputStream = null;
-  //
-  // try {
-  // accelerometerOutputStream = new FileOutputStream(new File(
-  // Environment.getExternalStorageDirectory(), fileStem + "_accelerometer_"
-  // + timestamp + ".csv"));
-  // TrackJDApplication.dataLayer(this).getAccelerometerAsCSV(
-  // accelerometerOutputStream, 0, Integer.MAX_VALUE);
-  //
-  // bluetoothOutputStream = new FileOutputStream(new File(
-  // Environment.getExternalStorageDirectory(), fileStem + "_bluetooth_"
-  // + timestamp + ".csv"));
-  // TrackJDApplication.dataLayer(this).getBluetoothAsCSV(
-  // bluetoothOutputStream, 0, Integer.MAX_VALUE);
-  //
-  // gpsOutputStream = new FileOutputStream(new File(
-  // Environment.getExternalStorageDirectory(), fileStem + "_gps_"
-  // + timestamp + ".csv"));
-  // TrackJDApplication.dataLayer(this).getGPSAsCSV(gpsOutputStream, 0,
-  // Integer.MAX_VALUE);
-  //
-  // orientationOutputStream = new FileOutputStream(new File(
-  // Environment.getExternalStorageDirectory(), fileStem + "_orientation_"
-  // + timestamp + ".csv"));
-  // TrackJDApplication.dataLayer(this).getOrientationAsCSV(
-  // orientationOutputStream, 0, Integer.MAX_VALUE);
-  //
-  // Toast.makeText(this,
-  // "wrote data to " + Environment.getExternalStorageDirectory(),
-  // Toast.LENGTH_SHORT).show();
-  // } catch (FileNotFoundException e) {
-  // Toast
-  // .makeText(
-  // this,
-  // "FAILED: "
-  // + e.getLocalizedMessage()
-  // + "\nMake sure your SD card is not already mounted on your computer.",
-  // Toast.LENGTH_LONG).show();
-  // } finally {
-  // if (accelerometerOutputStream != null)
-  // accelerometerOutputStream.close();
-  // if (bluetoothOutputStream != null)
-  // bluetoothOutputStream.close();
-  // if (gpsOutputStream != null)
-  // gpsOutputStream.close();
-  // if (orientationOutputStream != null)
-  // orientationOutputStream.close();
-  // }
-  // }
-
-  public void clickStop(View view) {
-    if (service != null) {
-      unbindService(serviceConnection);
-      service = null;
-    }
-    TrackJDApplication.stopIfRunning();
-    this.finish();
-  }
-}

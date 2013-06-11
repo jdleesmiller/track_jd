@@ -4,7 +4,9 @@ import android.bluetooth.BluetoothDevice;
 import android.content.Intent;
 
 /**
- * A single Bluetooth device detection.
+ * A single Bluetooth device detection. We record the detected device's
+ * Bluetooth MAC address, and also the Received Signal Strength Indicator
+ * (RSSI) for the detection.
  */
 public class BluetoothPoint extends AbstractPoint {
 
@@ -31,11 +33,11 @@ public class BluetoothPoint extends AbstractPoint {
     return "bt_v1";
   }
 
-  @Override
-  public void printCsvHeader(StringBuilder sb) {
-    sb.append("bdaddr,rssi");
-  }
-
+  /**
+   * Format: MAC address, RSSI.
+   * 
+   * @see org.thereflectproject.trackjd.data.AbstractPoint#printCsvData(java.lang.StringBuilder)
+   */
   @Override
   public void printCsvData(StringBuilder sb) {
     sb.append(bdaddr);

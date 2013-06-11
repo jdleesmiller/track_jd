@@ -9,6 +9,9 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.util.Log;
 
+/**
+ * Collect data from the accelerometer. See AccelerometerPoint for format.
+ */
 public class AccelerometerCollector extends AbstractSensorCollector {
 
   private SensorEventListener sensorListener;

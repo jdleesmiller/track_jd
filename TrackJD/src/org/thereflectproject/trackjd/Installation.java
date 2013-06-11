@@ -9,14 +9,24 @@ import java.util.UUID;
 import android.content.Context;
 
 /**
- * Fallback to identifying installations, if none of our device identifiers
- * are available. This is from
+ * Utility methods for identifying an installation of the software. If none
+ * of our device identifiers are available, this is a useful fallback. The
+ * approach here is from
  * http://android-developers.blogspot.co.uk/2011/03/identifying-app-installations.html
+ * Note that if the user re-installs the app, we cannot re-identify them after
+ * the install.
  */
 public class Installation {
-  private static String sID = null;
   private static final String INSTALLATION = "INSTALLATION";
+  private static String sID = null;
 
+  /**
+   * Get the unique identifier for this installation.
+   * 
+   * @param context
+   * 
+   * @return not null
+   */
   public synchronized static String id(Context context) {
     if (sID == null) {
       File installation = new File(context.getFilesDir(), INSTALLATION);

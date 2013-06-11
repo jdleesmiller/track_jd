@@ -1,6 +1,3 @@
-/**
- * 
- */
 package org.thereflectproject.trackjd;
 
 import java.util.Arrays;
@@ -13,6 +10,7 @@ import org.thereflectproject.trackjd.collector.GPSCollector;
 import org.thereflectproject.trackjd.collector.OrientationCollector;
 
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Binder;
@@ -20,21 +18,97 @@ import android.os.IBinder;
 import android.util.Log;
 
 /**
- * Background service for collecting data from a collection of sensors.
+ * The main background service. This coordinates the DataLogger, DataUploader
+ * and the Collectors for the sensors. The 
  */
 public class TrackJDService extends Service {
-  private boolean started;
+  /**
+   * Binder class used by activities to get data to/from this service.
+   */
+  public class LocalBinder extends Binder {
+    public TrackJDService getService() {
+      return TrackJDService.this;
+    }
+  }
+  
+  /**
+   * Start the background service. This can be called multiple times, even
+   * if the service is already running -- subsequent starts will have no
+   * effect.
+   * 
+   * @param context not null
+   */
+  public static void startBackgroundService(Context context) {
+    Log.d("TrackJDService", "startBackgroundService");
+    context.startService(new Intent(context, TrackJDService.class)); 
+  }
+  
+  /**
+   * Stop the background service.
+   * 
+   * @param context not null
+   */
+  public static void stopBackgroundService(Context context) {
+    Log.d("TrackJDService", "stopBackgroundService");
+    context.stopService(new Intent(context, TrackJDService.class));
+ }
 
-  private GPSCollector gpsCollector;
   private AccelerometerCollector accelerometerCollector;
-  private OrientationCollector orientationCollector;
   private BluetoothCollector bluetoothCollector;
   private List<AbstractCollector> collectors;
-  private SQLiteHelper dbHelper;
-  private SQLiteDatabase writableDb;
-  private SQLiteDatabase readableDb;
   private DataLogger dataLogger;
   private DataUploader dataUploader;
+  private SQLiteHelper dbHelper;
+  private GPSCollector gpsCollector;
+  private OrientationCollector orientationCollector;
+  private SQLiteDatabase readableDb;
+  private boolean started;
+
+  private SQLiteDatabase writableDb;
+  
+  /**
+   * @return not null; not empty
+   */
+  public List<AbstractCollector> getCollectors() {
+    return collectors;
+  }
+
+  /**
+   * @return not null
+   */
+  public DataLogger getDataLogger() {
+    return dataLogger;
+  }
+  
+  /**
+   * Call when reading data from the database. Do *not* close this; it is
+   * closed only when the service stops.
+   * 
+   * @return null when service is stopping
+   */
+  public SQLiteDatabase getReadableDb() {
+    return readableDb;
+  }
+
+  /**
+   * Call when writing data to the database. Do *not* close this; it is
+   * closed only when the service stops.
+   * 
+   * @return null when service is stopping (or write access not available)
+   */
+  public SQLiteDatabase getWritableDb() {
+    return writableDb;
+  }
+  
+  /*
+   * (non-Javadoc)
+   * 
+   * @see android.app.Service#onBind(android.content.Intent)
+   */
+  @Override
+  public IBinder onBind(Intent intent) {
+    return new LocalBinder();
+  }
 
   /*
    * (non-Javadoc)
@@ -58,23 +132,6 @@ public class TrackJDService extends Service {
     collectors = Arrays.asList(gpsCollector, accelerometerCollector,
         orientationCollector, bluetoothCollector);
   }
-  
-  /*
-   * (non-Javadoc)
-   * 
-   * @see android.app.Service#onStartCommand(android.content.Intent, int, int)
-   */
-  @Override
-  public int onStartCommand(Intent intent, int flags, int startId) {
-    Log.i("CollectorService", "onStartCommand");
-    // make sure we only start the collectors once
-    if (!started) {
-      start();
-    }
-    started = true;
-
-    return START_STICKY;
-  }
 
   /*
    * (non-Javadoc)
@@ -83,49 +140,25 @@ public class TrackJDService extends Service {
    */
   @Override
   public void onDestroy() {
-    Log.i("CollectorService", "onDestroy");
     stop();
-  }
-  
-  /**
-   * Binder class used by activities to get data to/from this service.
-   */
-  public class LocalBinder extends Binder {
-    public TrackJDService getService() {
-      return TrackJDService.this;
-    }
   }
 
   /*
    * (non-Javadoc)
    * 
-   * @see android.app.Service#onBind(android.content.Intent)
+   * @see android.app.Service#onStartCommand(android.content.Intent, int, int)
    */
   @Override
-  public IBinder onBind(Intent intent) {
-    return new LocalBinder();
+  public int onStartCommand(Intent intent, int flags, int startId) {
+    // make sure we only start the collectors once
+    if (!started) {
+      start();
+    }
+    started = true;
+
+    return START_STICKY;
   }
   
-  /**
-   * Call when writing data to the database. Do *not* close this; it is
-   * closed only when the service stops.
-   * 
-   * @return null when service is stopping (or write access not available)
-   */
-  public SQLiteDatabase getWritableDb() {
-    return writableDb;
-  }
-
-  /**
-   * Call when reading data from the database. Do *not* close this; it is
-   * closed only when the service stops.
-   * 
-   * @return null when service is stopping
-   */
-  public SQLiteDatabase getReadableDb() {
-    return readableDb;
-  }
-
   private void start() {
     writableDb = dbHelper.getWritableDatabase();
     readableDb = dbHelper.getWritableDatabase();
@@ -146,19 +179,5 @@ public class TrackJDService extends Service {
     readableDb = null;
     writableDb.close();
     writableDb = null;
-  }
-  
-  /**
-   * @return not null
-   */
-  public DataLogger getDataLogger() {
-    return dataLogger;
-  }
-
-  /**
-   * @return not null; not empty
-   */
-  public List<AbstractCollector> getCollectors() {
-    return collectors;
   }
 }

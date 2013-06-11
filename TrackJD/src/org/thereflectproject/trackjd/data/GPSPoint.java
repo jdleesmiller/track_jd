@@ -8,13 +8,13 @@ import android.location.Location;
  * recorded.
  */
 public class GPSPoint extends AbstractPoint {
-  private final double latitude;
-  private final double longitude;
   private final float accuracy;
   private final double altitude;
   private final float bearing;
-  private final float speed;
+  private final double latitude;
+  private final double longitude;
   private final int numSatellites;
+  private final float speed;
 
   public GPSPoint(Location location) {
     super(location.getTime());
@@ -59,11 +59,6 @@ public class GPSPoint extends AbstractPoint {
   @Override
   public String getTag() {
     return "gps_v1";
-  }
-
-  @Override
-  public void printCsvHeader(StringBuilder sb) {
-    sb.append("latitude,longitude,accuracy,altitude,bearing,speed,numSatellites");
   }
   
   @Override

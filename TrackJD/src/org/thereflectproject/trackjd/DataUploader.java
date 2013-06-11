@@ -10,7 +10,17 @@ import android.net.wifi.WifiManager;
 import android.os.Handler;
 import android.util.Log;
 
+/**
+ * Periodically try to upload data to from the database on the device to our
+ * server. This class polls constantly, but it only uploads data if the device
+ * says that it has WiFi.
+ */
 public class DataUploader implements Runnable {
+
+  /**
+   * Max number of records to upload at once. This is over all sensors.
+   */
+  private static final int MAX_RECORDS_TO_UPLOAD = 5000;
 
   /**
    * This is used for both the connection timeout (when trying to make the
@@ -27,14 +37,9 @@ public class DataUploader implements Runnable {
    */
   private static final long UPLOAD_INTERVAL_MILLIS = 5000;
 
-  /**
-   * Max number of records to upload at once. This is over all sensors.
-   */
-  private static final int MAX_RECORDS_TO_UPLOAD = 5000;
+  private final SharedPreferences prefs;
 
   private final TrackJDService service;
-
-  private final SharedPreferences prefs;
 
   private final Handler uploadHandler;
 
@@ -43,77 +48,6 @@ public class DataUploader implements Runnable {
     this.prefs = service.getSharedPreferences(Constants.PREFS_FILE_NAME,
         Context.MODE_PRIVATE);
     this.uploadHandler = new Handler();
-  }
-
-  /**
-   * Check devices's reported WiFi state. Note that this does not imply that we
-   * can actually connect to the server.
-   * 
-   * @return
-   */
-  public boolean isWiFiOn() {
-    return ((ConnectivityManager) service
-        .getSystemService(Context.CONNECTIVITY_SERVICE)).getNetworkInfo(
-        ConnectivityManager.TYPE_WIFI).isConnected();
-  }
-
-  /**
-   * Start checking whether to upload. Note that this doesn't actually start an
-   * upload unless we're on WiFi.
-   */
-  public void start() {
-    uploadHandler.post(this);
-  }
-
-  /**
-   * Stop checking whether to upload.
-   */
-  public void stop() {
-    uploadHandler.removeCallbacks(this);
-  }
-
-  /**
-   * @return fully qualified URI to post data to
-   */
-  public String getLogPath() {
-    String serverName = prefs.getString(Constants.PREF_SERVER_NAME, "");
-    return "http://" + serverName + "/log";
-  }
-
-  /**
-   * Runs periodically; checks WiFi state and, if we are connected, attempts an
-   * upload.
-   */
-  public void run() {
-    if (isWiFiOn()) {
-      // we're on WiFi -- try to upload
-      AsyncHttpClient client = new AsyncHttpClient();
-      client.setTimeout(TIMEOUT_MILLIS);
-      RequestParams params = new RequestParams();
-      addDeviceIdentifiers(params);
-      final long lastIdUploaded = service.getDataLogger().addToUpload(params,
-          MAX_RECORDS_TO_UPLOAD);
-      Log.d("DataUploader", "POST: " + getLogPath());
-      client.post(service, getLogPath(), params,
-          new AsyncHttpResponseHandler() {
-            @Override
-            public void onSuccess(String response) {
-              Log.d("DataUploader", "log success");
-              service.getDataLogger().clearLastUpload(lastIdUploaded);
-            }
-
-            @Override
-            public void onFinish() {
-              Log.d("DataUploader", "log finished");
-              // always keep polling
-              uploadHandler.postDelayed(DataUploader.this,
-                  UPLOAD_INTERVAL_MILLIS);
-            }
-          });
-    } else {
-      // no WiFi connection; try again later
-      uploadHandler.postDelayed(this, UPLOAD_INTERVAL_MILLIS);
-    }
   }
 
   /**
@@ -142,5 +76,76 @@ public class DataUploader implements Runnable {
     } catch (RuntimeException e) {
       Log.w("DataUploader", "failed to get WiFi MAC address");
     }
+  }
+
+  /**
+   * @return fully qualified URI to post data to
+   */
+  public String getLogPath() {
+    String serverName = prefs.getString(Constants.PREF_SERVER_NAME, "");
+    return "http://" + serverName + "/log";
+  }
+
+  /**
+   * Check devices's reported WiFi state. Note that this does not imply that we
+   * can actually connect to the server.
+   * 
+   * @return
+   */
+  public boolean isWiFiOn() {
+    return ((ConnectivityManager) service
+        .getSystemService(Context.CONNECTIVITY_SERVICE)).getNetworkInfo(
+        ConnectivityManager.TYPE_WIFI).isConnected();
+  }
+
+  /**
+   * Runs periodically; checks WiFi state and, if we are connected, attempts an
+   * upload.
+   */
+  public void run() {
+    if (isWiFiOn()) {
+      // we're on WiFi -- try to upload
+      AsyncHttpClient client = new AsyncHttpClient();
+      client.setTimeout(TIMEOUT_MILLIS);
+      RequestParams params = new RequestParams();
+      addDeviceIdentifiers(params);
+      final long lastIdUploaded = service.getDataLogger().addToUpload(params,
+          MAX_RECORDS_TO_UPLOAD);
+      Log.d("DataUploader", "POST: " + getLogPath());
+      client.post(service, getLogPath(), params,
+          new AsyncHttpResponseHandler() {
+            @Override
+            public void onFinish() {
+              Log.d("DataUploader", "log finished");
+              // always keep polling
+              uploadHandler.postDelayed(DataUploader.this,
+                  UPLOAD_INTERVAL_MILLIS);
+            }
+
+            @Override
+            public void onSuccess(String response) {
+              Log.d("DataUploader", "log success");
+              service.getDataLogger().clearLastUpload(lastIdUploaded);
+            }
+          });
+    } else {
+      // no WiFi connection; try again later
+      uploadHandler.postDelayed(this, UPLOAD_INTERVAL_MILLIS);
+    }
+  }
+
+  /**
+   * Start checking whether to upload. Note that this doesn't actually start an
+   * upload unless we're on WiFi.
+   */
+  public void start() {
+    uploadHandler.post(this);
+  }
+
+  /**
+   * Stop checking whether to upload.
+   */
+  public void stop() {
+    uploadHandler.removeCallbacks(this);
   }
 }

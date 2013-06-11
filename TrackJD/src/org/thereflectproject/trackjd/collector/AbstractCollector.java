@@ -8,7 +8,8 @@ import android.content.Context;
 import android.content.SharedPreferences;
 
 /**
- * A collector reads data from a particular sensor and stores it in a buffer.
+ * A collector reads data from a particular sensor and sends it to the
+ * DataLogger.
  */
 public abstract class AbstractCollector {
 

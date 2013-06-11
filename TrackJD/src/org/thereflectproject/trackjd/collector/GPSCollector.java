@@ -10,6 +10,9 @@ import android.location.LocationManager;
 import android.os.Bundle;
 import android.util.Log;
 
+/**
+ * Poll the GPS. See GPSPoint for the data format.
+ */
 public class GPSCollector extends AbstractCollector {
   private final LocationListener locationListener;
   private final LocationManager locationManager;
