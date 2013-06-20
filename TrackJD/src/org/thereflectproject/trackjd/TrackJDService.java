@@ -174,6 +174,7 @@ public class TrackJDService extends Service {
       collector.stop();
     }
     dataUploader.stop();
+    dataLogger.stop();
     
     readableDb.close();
     readableDb = null;
