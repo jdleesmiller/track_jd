@@ -27,7 +27,7 @@ public class TrackJDActivity extends Activity {
   /**
    * Assume we're on a LAN.
    */
-  private static final String DEFAULT_SERVER_NAME = "192.168.x.x:3666";
+  private static final String DEFAULT_SERVER_NAME = "localhost:3666";
 
   /**
    * On a scale of 0 to 1. The intention is to save some battery life if the
@@ -54,12 +54,9 @@ public class TrackJDActivity extends Activity {
    * @param view
    */
   public void clickStop(View view) {
-    if (service != null) {
-      unbindService(serviceConnection);
-      service = null;
-    }
+    ensureServiceConnectionUnbound();
     TrackJDService.stopBackgroundService(this);
-    this.finish();
+    finish();
   }
 
   /* (non-Javadoc)
@@ -73,24 +70,6 @@ public class TrackJDActivity extends Activity {
 
     final SharedPreferences prefs = getSharedPreferences(
         Constants.PREFS_FILE_NAME, MODE_PRIVATE);
-
-    TrackJDService.startBackgroundService(this);
-
-    // bind to the background service
-    serviceConnection = new ServiceConnection() {
-      public void onServiceConnected(ComponentName name, IBinder service) {
-        Log.i("TrackJDActivity", "background service connected");
-        TrackJDService.LocalBinder binder = (TrackJDService.LocalBinder) service;
-        TrackJDActivity.this.service = binder.getService();
-      }
-
-      public void onServiceDisconnected(ComponentName name) {
-        Log.i("TrackJDActivity", "background service disconnected");
-        TrackJDActivity.this.service = null;
-      }
-    };
-    this.bindService(new Intent(this, TrackJDService.class), serviceConnection,
-        0);
 
     final Handler handler = new Handler();
 
@@ -145,6 +124,49 @@ public class TrackJDActivity extends Activity {
         handler.postDelayed(this, POINTS_ON_DEVICE_UPDATE_DELAY);
       }
     });
+
+    TrackJDService.startBackgroundService(this);
+  }
+
+  /* (non-Javadoc)
+   * @see android.app.Activity#onStart()
+   */
+  @Override
+  protected void onStart() {
+    super.onStart();
+    
+    serviceConnection = new ServiceConnection() {
+      public void onServiceConnected(ComponentName name, IBinder service) {
+        Log.i("TrackJDActivity", "background service connected");
+        TrackJDService.LocalBinder binder = (TrackJDService.LocalBinder) service;
+        TrackJDActivity.this.service = binder.getService();
+      }
+
+      public void onServiceDisconnected(ComponentName name) {
+        Log.i("TrackJDActivity", "background service disconnected");
+        TrackJDActivity.this.service = null;
+      }
+    };
+    
+    this.bindService(new Intent(this, TrackJDService.class), serviceConnection,
+        0);
+  }
+
+  /* (non-Javadoc)
+   * @see android.app.Activity#onStop()
+   */
+  @Override
+  protected void onStop() {
+    super.onStop();
+    ensureServiceConnectionUnbound();
+  }
+  
+  private void ensureServiceConnectionUnbound() {
+    if (service != null) {
+      unbindService(serviceConnection);
+      service = null;
+      serviceConnection = null;
+    }
   }
 }
 

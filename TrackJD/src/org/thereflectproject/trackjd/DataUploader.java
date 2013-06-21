@@ -109,6 +109,7 @@ public class DataUploader implements Runnable {
       client.setTimeout(TIMEOUT_MILLIS);
       RequestParams params = new RequestParams();
       addDeviceIdentifiers(params);
+      params.put("device_clock", Long.toString(System.currentTimeMillis()));
       final long lastIdUploaded = service.getDataLogger().addToUpload(params,
           MAX_RECORDS_TO_UPLOAD);
       Log.d("DataUploader", "POST: " + getLogPath());

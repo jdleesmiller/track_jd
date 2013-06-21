@@ -16,7 +16,8 @@ import android.util.Log;
 public class OrientationCollector extends AbstractSensorCollector {
 
   /**
-   * In microseconds.
+   * In microseconds. Note that this is just a hint -- the actual rate at which
+   * points are delivered can be quite random over short periods.
    */
   private static final int DEFAULT_INTERVAL = 500000;
 

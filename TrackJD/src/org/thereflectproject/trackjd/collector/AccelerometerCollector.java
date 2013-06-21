@@ -18,7 +18,9 @@ public class AccelerometerCollector extends AbstractSensorCollector {
   
   /**
    * In microseconds. Maximum update rate appear to be 50Hz, which is pretty
-   * fast, so we default lower.
+   * fast, so we default lower. Note that this is just a hint -- the actual
+   * rate at which points are delivered can be quite random over short
+   * periods.
    */
   private static final int DEFAULT_INTERVAL = 250000;
 

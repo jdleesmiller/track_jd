@@ -26,4 +26,9 @@ public interface Constants {
    * Integer in microseconds.
    */
   public static String PREF_ORIENTATION_INTERVAL = "orientation_interval";
+
+  /**
+   * Integer in milliseconds.
+   */
+  public static String PREF_BLUETOOTH_INTERVAL = "bluetooth_interval";
 }

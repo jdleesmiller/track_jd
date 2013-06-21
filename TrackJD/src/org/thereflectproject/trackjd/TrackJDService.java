@@ -7,6 +7,7 @@ import org.thereflectproject.trackjd.collector.AbstractCollector;
 import org.thereflectproject.trackjd.collector.AccelerometerCollector;
 import org.thereflectproject.trackjd.collector.BluetoothCollector;
 import org.thereflectproject.trackjd.collector.GPSCollector;
+import org.thereflectproject.trackjd.collector.NetworkCollector;
 import org.thereflectproject.trackjd.collector.OrientationCollector;
 
 import android.app.Service;
@@ -19,7 +20,7 @@ import android.util.Log;
 
 /**
  * The main background service. This coordinates the DataLogger, DataUploader
- * and the Collectors for the sensors. The 
+ * and the Collectors for the sensors. The
  */
 public class TrackJDService extends Service {
   /**
@@ -30,28 +31,29 @@ public class TrackJDService extends Service {
       return TrackJDService.this;
     }
   }
-  
+
   /**
-   * Start the background service. This can be called multiple times, even
-   * if the service is already running -- subsequent starts will have no
-   * effect.
+   * Start the background service. This can be called multiple times, even if
+   * the service is already running -- subsequent starts will have no effect.
    * 
-   * @param context not null
+   * @param context
+   *          not null
    */
   public static void startBackgroundService(Context context) {
     Log.d("TrackJDService", "startBackgroundService");
-    context.startService(new Intent(context, TrackJDService.class)); 
+    context.startService(new Intent(context, TrackJDService.class));
   }
-  
+
   /**
    * Stop the background service.
    * 
-   * @param context not null
+   * @param context
+   *          not null
    */
   public static void stopBackgroundService(Context context) {
     Log.d("TrackJDService", "stopBackgroundService");
     context.stopService(new Intent(context, TrackJDService.class));
- }
+  }
 
   private AccelerometerCollector accelerometerCollector;
   private BluetoothCollector bluetoothCollector;
@@ -60,12 +62,13 @@ public class TrackJDService extends Service {
   private DataUploader dataUploader;
   private SQLiteHelper dbHelper;
   private GPSCollector gpsCollector;
+  private NetworkCollector networkCollector;
   private OrientationCollector orientationCollector;
   private SQLiteDatabase readableDb;
   private boolean started;
 
   private SQLiteDatabase writableDb;
-  
+
   /**
    * @return not null; not empty
    */
@@ -79,10 +82,10 @@ public class TrackJDService extends Service {
   public DataLogger getDataLogger() {
     return dataLogger;
   }
-  
+
   /**
-   * Call when reading data from the database. Do *not* close this; it is
-   * closed only when the service stops.
+   * Call when reading data from the database. Do *not* close this; it is closed
+   * only when the service stops.
    * 
    * @return null when service is stopping
    */
@@ -91,15 +94,15 @@ public class TrackJDService extends Service {
   }
 
   /**
-   * Call when writing data to the database. Do *not* close this; it is
-   * closed only when the service stops.
+   * Call when writing data to the database. Do *not* close this; it is closed
+   * only when the service stops.
    * 
    * @return null when service is stopping (or write access not available)
    */
   public SQLiteDatabase getWritableDb() {
     return writableDb;
   }
-  
+
   /*
    * (non-Javadoc)
    * 
@@ -120,17 +123,18 @@ public class TrackJDService extends Service {
     started = false;
 
     dbHelper = new SQLiteHelper(this);
-    
+
     dataLogger = new DataLogger(this);
     dataUploader = new DataUploader(this);
 
     gpsCollector = new GPSCollector(this);
+    networkCollector = new NetworkCollector(this);
     accelerometerCollector = new AccelerometerCollector(this);
     orientationCollector = new OrientationCollector(this);
     bluetoothCollector = new BluetoothCollector(this);
 
-    collectors = Arrays.asList(gpsCollector, accelerometerCollector,
-        orientationCollector, bluetoothCollector);
+    collectors = Arrays.asList(gpsCollector, networkCollector,
+        accelerometerCollector, orientationCollector, bluetoothCollector);
   }
 
   /*
@@ -158,11 +162,11 @@ public class TrackJDService extends Service {
 
     return START_STICKY;
   }
-  
+
   private void start() {
     writableDb = dbHelper.getWritableDatabase();
     readableDb = dbHelper.getWritableDatabase();
-    
+
     for (AbstractCollector collector : collectors) {
       collector.start();
     }
@@ -174,7 +178,8 @@ public class TrackJDService extends Service {
       collector.stop();
     }
     dataUploader.stop();
-    
+    dataLogger.stop();
+
     readableDb.close();
     readableDb = null;
     writableDb.close();
