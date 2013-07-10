@@ -31,4 +31,9 @@ public interface Constants {
    * Integer in milliseconds.
    */
   public static String PREF_BLUETOOTH_INTERVAL = "bluetooth_interval";
+
+  /**
+   * Assume we're on a LAN.
+   */
+  public static final String DEFAULT_SERVER_NAME = "localhost:3666";
 }

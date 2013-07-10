@@ -30,7 +30,7 @@ public class DataUploader implements Runnable {
    * connectivity will often be intermittent, and we have to retry reasonably
    * quickly.
    */
-  private static final int TIMEOUT_MILLIS = 5000;
+  private static final int TIMEOUT_MILLIS = 20000;
 
   /**
    * Wait this long between attempting uploads.
@@ -82,7 +82,8 @@ public class DataUploader implements Runnable {
    * @return fully qualified URI to post data to
    */
   public String getLogPath() {
-    String serverName = prefs.getString(Constants.PREF_SERVER_NAME, "");
+    String serverName = prefs.getString(Constants.PREF_SERVER_NAME,
+        Constants.DEFAULT_SERVER_NAME);
     return "http://" + serverName + "/log";
   }
 

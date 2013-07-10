@@ -25,11 +25,6 @@ import android.widget.TextView;
  */
 public class TrackJDActivity extends Activity {
   /**
-   * Assume we're on a LAN.
-   */
-  private static final String DEFAULT_SERVER_NAME = "localhost:3666";
-
-  /**
    * On a scale of 0 to 1. The intention is to save some battery life if the
    * device is doing nothing but logging.
    */
@@ -89,7 +84,7 @@ public class TrackJDActivity extends Activity {
       }
     });
     serverName.setText(prefs.getString(Constants.PREF_SERVER_NAME,
-        DEFAULT_SERVER_NAME));
+        Constants.DEFAULT_SERVER_NAME));
 
     final CheckBox dimScreen = (CheckBox) findViewById(R.id.dim_screen);
     dimScreen
