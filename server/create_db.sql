@@ -29,6 +29,16 @@ CREATE TABLE gps_records (
   speed REAL,
   num_satellites SMALLINT);
 
+CREATE TABLE network_records (
+  network_record_id SERIAL PRIMARY KEY,
+  device_id INTEGER REFERENCES devices(device_id),
+  device_network_record_id INTEGER,
+  utc_time BIGINT,
+  event_time BIGINT,
+  latitude DOUBLE PRECISION,
+  longitude DOUBLE PRECISION,
+  accuracy REAL)
+
 CREATE TABLE accelerometer_records (
   accelerometer_record_id SERIAL PRIMARY KEY,
   device_id INTEGER REFERENCES devices(device_id),

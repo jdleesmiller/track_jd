@@ -54,6 +54,20 @@ def store_gps_records device_id, csv
 end
 
 #
+# Insert network location (coarse location) records.
+#
+def store_network_records device_id, csv
+  sql = 'INSERT INTO network_records (device_id,
+           device_network_record_id, utc_time,
+           event_time, latitude, longitude, accuracy)
+         VALUES ($1, $2, $3, $4, $5, $6, $7)'
+  CSV.parse(csv, headers: false).each do |row|
+    $cn.exec(sql, [device_id] + row)
+  end
+end
+
+
+#
 # Insert accelerometer records.
 #
 def store_accelerometer_records device_id, csv
@@ -102,10 +116,17 @@ track_jd = Rack::Builder.new do
       req = Rack::Request.new(env)
 
       device_id = lookup_device(req.ip, req.params)
-      puts "received data from device #{device_id} (#{req.ip})"
+
+      # this is milliseconds since the epoch
+      device_clock = Time.at(req.params['device_clock'].to_i/1e3) rescue nil
+
+      puts "recv from device #{device_id} (#{req.ip} @ #{device_clock})"
 
       store_gps_records(device_id,
         req.params['gps_v1'][:tempfile]) if req.params['gps_v1']
+
+      store_network_records(device_id,
+        req.params['network_v1'][:tempfile]) if req.params['network_v1']
 
       store_accelerometer_records(device_id,
         req.params['accel_v1'][:tempfile]) if req.params['accel_v1']
